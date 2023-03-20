@@ -26,6 +26,12 @@ namespace operations_research {
 namespace packing {
 namespace vbp {
 
+// Implementation of the `AbslStringify` interface.
+template <typename Sink>
+void AbslStringify(Sink& sink, const ::google::protobuf::Message& message) {
+  sink.Append(message.DebugString());
+}
+
 bool VbpParser::ParseFile(const std::string& data_filename) {
   vbp_.Clear();
 

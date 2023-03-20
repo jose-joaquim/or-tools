@@ -28,6 +28,12 @@ namespace operations_research {
 namespace scheduling {
 namespace rcpsp {
 
+// Implementation of the `AbslStringify` interface.
+template <typename Sink>
+void AbslStringify(Sink& sink, const ::google::protobuf::Message& message) {
+  sink.Append(message.DebugString());
+}
+
 RcpspParser::RcpspParser()
     : seed_(-1),
       load_status_(NOT_STARTED),

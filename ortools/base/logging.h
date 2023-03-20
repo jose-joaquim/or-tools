@@ -53,4 +53,12 @@ enum LogSeverity {
 };
 }  // namespace google
 
+namespace operations_research {
+  // Implementation of the `AbslStringify` interface.
+  template <typename Sink>
+  void AbslStringify(Sink& sink, const ::google::protobuf::Message& message) {
+    sink.Append(message.DebugString());
+  }
+}  // namespace operations_research
+
 #endif  // OR_TOOLS_BASE_LOGGING_H_
