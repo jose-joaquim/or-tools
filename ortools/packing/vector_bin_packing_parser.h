@@ -24,12 +24,19 @@
 #include <string>
 #include <vector>
 
+#include "ortools/base/logging.h"
 #include "ortools/base/integral_types.h"
 #include "ortools/packing/vector_bin_packing.pb.h"
 
 namespace operations_research {
 namespace packing {
 namespace vbp {
+
+// Implementation of the `AbslStringify` interface.
+template <typename Sink>
+void AbslStringify(Sink& sink, const ::google::protobuf::Message& message) {
+  sink.Append(message.DebugString());
+}
 
 class VbpParser {
  public:

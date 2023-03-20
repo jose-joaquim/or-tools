@@ -27,6 +27,12 @@ namespace operations_research {
 namespace scheduling {
 namespace rcpsp {
 
+// Implementation of the `AbslStringify` interface.
+template <typename Sink>
+void AbslStringify(Sink& sink, const ::google::protobuf::Message& message) {
+  sink.Append(message.DebugString());
+}
+
 // RCPSP parser.
 // Parse a RCPSP problem and load it into a RcpspProblem proto.
 // See description of the problem in ./rcpsp.proto

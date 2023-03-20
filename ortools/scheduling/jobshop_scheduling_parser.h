@@ -25,6 +25,12 @@ namespace operations_research {
 namespace scheduling {
 namespace jssp {
 
+// Implementation of the `AbslStringify` interface.
+template <typename Sink>
+void AbslStringify(Sink& sink, const ::google::protobuf::Message& message) {
+  sink.Append(message.DebugString());
+}
+
 class JsspParser {
  public:
   enum ProblemType {
