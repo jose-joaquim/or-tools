@@ -141,6 +141,9 @@ class CplexInterface : public MPSolverInterface {
     return CPX_NAN;
   }
 
+  bool SetSolverSpecificParametersAsString(
+      const std::string& parameters) override;
+
  protected:
   // Set all parameters in the underlying solver.
   virtual void SetParameters(MPSolverParameters const& param);
@@ -151,6 +154,7 @@ class CplexInterface : public MPSolverInterface {
   virtual void SetPresolveMode(int value);
   virtual void SetScalingMode(int value);
   virtual void SetLpAlgorithm(int value);
+  void SetMipFocus(int value) override;
 
   virtual bool ReadParameterFile(std::string const& filename);
   virtual std::string ValidFileExtensionForParameterFile() const;
@@ -1070,6 +1074,122 @@ bool CplexInterface::ReadParameterFile(std::string const& filename) {
 
 std::string CplexInterface::ValidFileExtensionForParameterFile() const {
   return ".prm";
+}
+
+void CplexInterface::SetMipFocus(int value) {
+  switch (value) {
+    case MPSolverParameters::BALANCED:
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_BALANCED);
+      break;
+    case MPSolverParameters::FEASIBILITY:
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_FEASIBILITY);
+      break;
+    case MPSolverParameters::OPTIMALITY:
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_OPTIMALITY);
+      break;
+    case MPSolverParameters::BESTBOUND:
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_BESTBOUND);
+      break;
+    case MPSolverParameters::HIDDENFEAS:
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_HIDDENFEAS);
+      break;
+    case MPSolverParameters::HEURISTIC:
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_HEURISTIC);
+      break;
+    default:
+      SetIntegerParamToUnsupportedValue(MPSolverParameters::FOCUS, value);
+  }
+}
+
+absl::Status SetSolverSpecificParameters(const std::string& parameters,
+                                         CPXENVptr* mEnv) {
+  if (parameters.empty()) return absl::OkStatus();
+  std::vector<std::string> error_messages;
+  for (absl::string_view line : absl::StrSplit(parameters, '\n')) {
+    if (line.empty()) continue;
+
+    for (absl::string_view token :
+         absl::StrSplit(line, ',', absl::SkipWhitespace())) {
+      if (token.empty()) continue;
+
+      std::vector<std::string> key_value =
+          absl::StrSplit(token, absl::ByAnyChar(" ="), absl::SkipWhitespace());
+
+      if (key_value.size() != 2) {
+        const std::string current_message =
+            absl::StrCat("Cannot parse parameter '", token,
+                         "'. Expected format is 'ParameterName value' or "
+                         "'ParameterName=value'");
+        error_messages.push_back(current_message);
+        continue;
+      }
+
+      std::string param_string;
+      absl::StrAppend(&param_string, "CPXPARAM_",
+                      key_value[0]);  // TODO: retirar isso aqui
+      int param_code = -1, type;
+      int ok = CPXXgetparamnum(*mEnv, param_string.c_str(), &param_code);
+
+      if (ok != 0) {
+        const std::string current_message =
+            absl::StrCat("Error setting parameter '", key_value[0],
+                         "' to value '", key_value[1], "': ", ok);
+        error_messages.push_back(current_message);
+        continue;
+      }
+
+      ok = CPXXgetparamtype(*mEnv, param_code, &type);
+
+      if (ok != 0) {
+        const std::string current_message =
+            absl::StrCat("Error setting parameter '", key_value[0],
+                         "' to value '", key_value[1], "': ", ok);
+        error_messages.push_back(current_message);
+        continue;
+      }
+
+      ok = 1;
+      switch (type) {
+        case CPX_PARAMTYPE_INT:
+          ok = CPXXsetintparam(*mEnv, param_code,
+                              std::stoi(key_value[1].c_str()));
+          break;
+        case CPX_PARAMTYPE_DOUBLE:
+          ok = CPXXsetdblparam(*mEnv, param_code,
+                              std::stod(key_value[1].c_str()));
+          break;
+        case CPX_PARAMTYPE_STRING:
+          ok = CPXXsetstrparam(*mEnv, param_code, key_value[1].c_str());
+          break;
+        case CPX_PARAMTYPE_LONG:
+          ok = CPXXsetlongparam(*mEnv, param_code,
+                               std::stol(key_value[1].c_str()));
+          break;
+        default:
+          LOG(DFATAL)
+              << "An error occurred while setting the value of parameter "
+              << key_value[0].c_str();
+      }
+
+      if (ok == 0) {
+        VLOG(2) << absl::StrCat("Set parameter '", key_value[0], "' to value '",
+                                key_value[1]);
+      } else {
+        const std::string current_message =
+            absl::StrCat("Error setting parameter '", key_value[0],
+                         "' to value '", key_value[1], "': ", ok);
+        error_messages.push_back(current_message);
+      }
+    }
+  }
+
+  if (error_messages.empty()) return absl::OkStatus();
+  return absl::InvalidArgumentError(absl::StrJoin(error_messages, "\n"));
+}
+
+bool CplexInterface::SetSolverSpecificParametersAsString(
+    const std::string& parameters) {
+  return SetSolverSpecificParameters(parameters, &mEnv).ok();
 }
 
 MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {

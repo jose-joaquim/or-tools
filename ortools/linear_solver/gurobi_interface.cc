@@ -209,6 +209,7 @@ class GurobiInterface : public MPSolverInterface {
   void SetPresolveMode(int value) override;
   void SetScalingMode(int value) override;
   void SetLpAlgorithm(int value) override;
+  void SetMipFocus(int value) override;
 
   MPSolver::BasisStatus TransformGRBVarBasisStatus(
       int gurobi_basis_status) const;
@@ -1132,6 +1133,29 @@ void GurobiInterface::SetLpAlgorithm(int value) {
     default:
       SetIntegerParamToUnsupportedValue(MPSolverParameters::LP_ALGORITHM,
                                         value);
+  }
+}
+
+void GurobiInterface::SetMipFocus(int value) {
+  switch (value) {
+    case MPSolverParameters::BALANCED:
+      CheckedGurobiCall(GRBsetintparam(GRBgetenv(model_), GRB_INT_PAR_MIPFOCUS,
+                                       GRB_MIPFOCUS_BALANCED));
+      break;
+    case MPSolverParameters::FEASIBILITY:
+      CheckedGurobiCall(GRBsetintparam(GRBgetenv(model_), GRB_INT_PAR_MIPFOCUS,
+                                       GRB_MIPFOCUS_FEASIBILITY));
+      break;
+    case MPSolverParameters::OPTIMALITY:
+      CheckedGurobiCall(GRBsetintparam(GRBgetenv(model_), GRB_INT_PAR_MIPFOCUS,
+                                       GRB_MIPFOCUS_OPTIMALITY));
+      break;
+    case MPSolverParameters::BESTBOUND:
+      CheckedGurobiCall(GRBsetintparam(GRBgetenv(model_), GRB_INT_PAR_MIPFOCUS,
+                                       GRB_MIPFOCUS_BESTBOUND));
+      break;
+    default:
+      SetIntegerParamToUnsupportedValue(MPSolverParameters::FOCUS, value);
   }
 }
 

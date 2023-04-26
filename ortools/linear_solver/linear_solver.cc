@@ -2085,6 +2085,7 @@ void MPSolverInterface::SetMIPParameters(const MPSolverParameters& param) {
   if (solver_->ProblemType() != MPSolver::GLOP_LINEAR_PROGRAMMING) {
     SetRelativeMipGap(
         param.GetDoubleParam(MPSolverParameters::RELATIVE_MIP_GAP));
+    SetMipFocus(param.GetIntegerParam(MPSolverParameters::FOCUS));
   }
 }
 
@@ -2123,9 +2124,16 @@ bool MPSolverInterface::SetSolverSpecificParametersAsString(
   return false;
 }
 
+void MPSolverInterface::SetMipFocus(int value) {
+  LOG(WARNING) << "SetMipFocus() not supported by " << SolverVersion()
+               << ". Try SetSolverSpecificParametersAsString() instead.";
+}
+
 // ---------- MPSolverParameters ----------
 
 const double MPSolverParameters::kDefaultRelativeMipGap = 1e-4;
+const MPSolverParameters::FocusValues MPSolverParameters::kDefaultMipFocus =
+    MPSolverParameters::BALANCED;
 // For the primal and dual tolerances, choose the same default as CLP and GLPK.
 const double MPSolverParameters::kDefaultPrimalTolerance =
     operations_research::kDefaultPrimalTolerance;
@@ -2150,7 +2158,8 @@ MPSolverParameters::MPSolverParameters()
       scaling_value_(kDefaultIntegerParamValue),
       lp_algorithm_value_(kDefaultIntegerParamValue),
       incrementality_value_(kDefaultIncrementality),
-      lp_algorithm_is_default_(true) {}
+      lp_algorithm_is_default_(true),
+      mip_focus_value_(kDefaultMipFocus) {}
 
 void MPSolverParameters::SetDoubleParam(MPSolverParameters::DoubleParam param,
                                         double value) {
@@ -2305,6 +2314,9 @@ int MPSolverParameters::GetIntegerParam(
     }
     case SCALING: {
       return scaling_value_;
+    }
+    case FOCUS: {
+      return mip_focus_value_;
     }
     default: {
       LOG(ERROR) << "Trying to get an unknown parameter: " << param << ".";

@@ -1451,7 +1451,9 @@ class MPSolverParameters {
     /// Advanced usage: incrementality from one solve to the next.
     INCREMENTALITY = 1002,
     /// Advanced usage: enable or disable matrix scaling.
-    SCALING = 1003
+    SCALING = 1003,
+    /// Controls the solver strategy to find new solutions
+    FOCUS = 1004
   };
 
   /// For each categorical parameter, enumeration of possible values.
@@ -1492,6 +1494,15 @@ class MPSolverParameters {
     SCALING_ON = 1
   };
 
+  enum FocusValues {
+    BALANCED = 0,
+    FEASIBILITY = 1,
+    OPTIMALITY = 2,
+    BESTBOUND = 3,
+    HIDDENFEAS = 4,
+    HEURISTIC = 5
+  };
+
   // Placeholder value to indicate that a parameter is set to
   // the default value defined in the wrapper.
   static const double kDefaultDoubleParamValue;
@@ -1511,6 +1522,7 @@ class MPSolverParameters {
   static const double kDefaultDualTolerance;
   static const PresolveValues kDefaultPresolve;
   static const IncrementalityValues kDefaultIncrementality;
+  static const FocusValues kDefaultMipFocus;
 
   /// The constructor sets all parameters to their default value.
   MPSolverParameters();
@@ -1555,6 +1567,7 @@ class MPSolverParameters {
   int scaling_value_;
   int lp_algorithm_value_;
   int incrementality_value_;
+  int mip_focus_value_;
 
   // Boolean value indicating whether each parameter is set to the
   // solver's default value. Only parameters for which the wrapper
@@ -1849,6 +1862,7 @@ class MPSolverInterface {
   virtual void SetPrimalTolerance(double value) = 0;
   virtual void SetDualTolerance(double value) = 0;
   virtual void SetPresolveMode(int value) = 0;
+  virtual void SetMipFocus(int value);
 
   // Sets the number of threads to be used by the solver.
   virtual absl::Status SetNumThreads(int num_threads);
