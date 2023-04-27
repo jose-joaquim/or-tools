@@ -170,6 +170,7 @@ cc_library(
     name = "linear_solver",
     srcs = [
         "gurobi_interface.cc",
+        "cplex_interface.cc",
         "linear_expr.cc",
         "linear_solver.cc",
         "linear_solver_callback.cc",

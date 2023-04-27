@@ -139,11 +139,6 @@ if(USE_SCIP)
   endif()
 endif()
 
-# Check optional Dependencies
-if(USE_CPLEX)
-  find_package(CPLEX REQUIRED)
-endif()
-
 if(USE_XPRESS)
   find_package(XPRESS REQUIRED)
 endif()

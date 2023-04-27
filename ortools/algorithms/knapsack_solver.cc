@@ -1301,12 +1301,10 @@ KnapsackSolver::KnapsackSolver(SolverType solver_type,
           MPSolver::XPRESS_MIXED_INTEGER_PROGRAMMING, solver_name);
       break;
 #endif
-#if defined(USE_CPLEX)
     case KNAPSACK_MULTIDIMENSION_CPLEX_MIP_SOLVER:
       solver_ = std::make_unique<KnapsackMIPSolver>(
           MPSolver::CPLEX_MIXED_INTEGER_PROGRAMMING, solver_name);
       break;
-#endif
     default:
       LOG(FATAL) << "Unknown knapsack solver type.";
   }

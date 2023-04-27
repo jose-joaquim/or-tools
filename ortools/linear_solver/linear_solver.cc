@@ -389,9 +389,7 @@ extern MPSolverInterface* BuildSCIPInterface(MPSolver* const solver);
 #endif
 extern MPSolverInterface* BuildGurobiInterface(bool mip,
                                                MPSolver* const solver);
-#if defined(USE_CPLEX)
 extern MPSolverInterface* BuildCplexInterface(bool mip, MPSolver* const solver);
-#endif
 #if defined(USE_XPRESS)
 extern MPSolverInterface* BuildXpressInterface(bool mip,
                                                MPSolver* const solver);
@@ -443,12 +441,10 @@ MPSolverInterface* BuildSolverInterface(MPSolver* const solver) {
       return BuildGurobiInterface(false, solver);
     case MPSolver::GUROBI_MIXED_INTEGER_PROGRAMMING:
       return BuildGurobiInterface(true, solver);
-#if defined(USE_CPLEX)
     case MPSolver::CPLEX_LINEAR_PROGRAMMING:
       return BuildCplexInterface(false, solver);
     case MPSolver::CPLEX_MIXED_INTEGER_PROGRAMMING:
       return BuildCplexInterface(true, solver);
-#endif
 #if defined(USE_XPRESS)
     case MPSolver::XPRESS_MIXED_INTEGER_PROGRAMMING:
       return BuildXpressInterface(true, solver);
@@ -490,6 +486,7 @@ MPSolver::MPSolver(const std::string& name,
 MPSolver::~MPSolver() { Clear(); }
 
 extern bool GurobiIsCorrectlyInstalled();
+extern bool CplexIsCorrectlyInstalled();
 
 // static
 bool MPSolver::SupportsProblemType(OptimizationProblemType problem_type) {
@@ -528,11 +525,8 @@ bool MPSolver::SupportsProblemType(OptimizationProblemType problem_type) {
 #ifdef USE_SCIP
   if (problem_type == SCIP_MIXED_INTEGER_PROGRAMMING) return true;
 #endif
-#ifdef USE_CPLEX
-  if (problem_type == CPLEX_LINEAR_PROGRAMMING ||
-      problem_type == CPLEX_MIXED_INTEGER_PROGRAMMING) {
-    return true;
-  }
+#ifdef USE_CBC
+  if (problem_type == CBC_MIXED_INTEGER_PROGRAMMING) return true;
 #endif
 #ifdef USE_XPRESS
   if (problem_type == XPRESS_MIXED_INTEGER_PROGRAMMING ||
@@ -540,6 +534,10 @@ bool MPSolver::SupportsProblemType(OptimizationProblemType problem_type) {
     return true;
   }
 #endif
+  if (problem_type == CPLEX_LINEAR_PROGRAMMING ||
+      problem_type == CPLEX_MIXED_INTEGER_PROGRAMMING) {
+    return CplexIsCorrectlyInstalled();
+  }
 
   return false;
 }
@@ -739,7 +737,7 @@ class MPConstraintNamesIterator {
   explicit MPConstraintNamesIterator(const MPModelProto& model)
       : model_(model),
         // To iterate both on the constraint[] and the general_constraint[]
-        // field, we use the bit trick that i ≥ 0 corresponds to constraint[i],
+        // field, we use the bit trick that i   0 corresponds to constraint[i],
         // and i < 0 corresponds to general_constraint[~i = -i-1].
         index_(model_.constraint().empty() ? ~0 : 0) {}
   int index() const { return index_; }
@@ -1577,7 +1575,7 @@ std::string PrettyPrintVar(const MPVariable& var) {
   const std::string prefix = "Variable '" + var.name() + "': domain = ";
   if (var.lb() >= MPSolver::infinity() || var.ub() <= -MPSolver::infinity() ||
       var.lb() > var.ub()) {
-    return prefix + "∅";  // Empty set.
+    return prefix + " ";  // Empty set.
   }
   // Special case: integer variable with at most two possible values
   // (and potentially none).
@@ -1585,7 +1583,7 @@ std::string PrettyPrintVar(const MPVariable& var) {
     const int64_t lb = static_cast<int64_t>(ceil(var.lb()));
     const int64_t ub = static_cast<int64_t>(floor(var.ub()));
     if (lb > ub) {
-      return prefix + "∅";
+      return prefix + " ";
     } else if (lb == ub) {
       return absl::StrFormat("%s{ %d }", prefix.c_str(), lb);
     } else {
@@ -1598,10 +1596,10 @@ std::string PrettyPrintVar(const MPVariable& var) {
   }
   return prefix + (var.integer() ? "Integer" : "Real") + " in " +
          (var.lb() <= -MPSolver::infinity()
-              ? std::string("]-∞")
+              ? std::string("]- ")
               : absl::StrFormat("[%f", var.lb())) +
          ", " +
-         (var.ub() >= MPSolver::infinity() ? std::string("+∞[")
+         (var.ub() >= MPSolver::infinity() ? std::string("+ [")
                                            : absl::StrFormat("%f]", var.ub()));
 }
 
@@ -1623,12 +1621,12 @@ std::string PrettyPrintConstraint(const MPConstraint& constraint) {
   }
   // Inequalities.
   if (constraint.lb() <= -MPSolver::infinity()) {
-    return absl::StrFormat("%s ≤ %f", prefix.c_str(), constraint.ub());
+    return absl::StrFormat("%s   %f", prefix.c_str(), constraint.ub());
   }
   if (constraint.ub() >= MPSolver::infinity()) {
-    return absl::StrFormat("%s ≥ %f", prefix.c_str(), constraint.lb());
+    return absl::StrFormat("%s   %f", prefix.c_str(), constraint.lb());
   }
-  return absl::StrFormat("%s ∈ [%f, %f]", prefix.c_str(), constraint.lb(),
+  return absl::StrFormat("%s   [%f, %f]", prefix.c_str(), constraint.lb(),
                          constraint.ub());
 }
 }  // namespace

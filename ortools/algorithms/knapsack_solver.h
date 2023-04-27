@@ -175,15 +175,12 @@ class KnapsackSolver {
      */
     KNAPSACK_MULTIDIMENSION_XPRESS_MIP_SOLVER = 7,
 #endif
-
-#if defined(USE_CPLEX)
     /** CPLEX based solver
      *
      * This solver can deal with both large number of items and several
      * dimensions. This solver is based on Integer Programming solver CPLEX.
      */
     KNAPSACK_MULTIDIMENSION_CPLEX_MIP_SOLVER = 8,
-#endif
     /** Divide and Conquer approach for single dimension problems
      *
      * Limited to one dimension, this solver is based on a divide and conquer

@@ -260,9 +260,6 @@ if(USE_SCIP)
 endif()
 
 # Optional third party solvers (disabled by default)
-## CPLEX
-option(USE_CPLEX "Use the CPLEX solver" OFF)
-message(STATUS "CPLEX support: ${USE_CPLEX}")
 
 ## XPRESS
 option(USE_XPRESS "Use the XPRESS solver" OFF)

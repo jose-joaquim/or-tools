@@ -56,9 +56,6 @@ if(USE_SCIP)
   list(APPEND OR_TOOLS_COMPILE_DEFINITIONS "USE_SCIP")
   set(GSCIP_DIR gscip)
 endif()
-if(USE_CPLEX)
-  list(APPEND OR_TOOLS_COMPILE_DEFINITIONS "USE_CPLEX")
-endif()
 if(USE_XPRESS)
   list(APPEND OR_TOOLS_COMPILE_DEFINITIONS "USE_XPRESS")
   if(MSVC)
@@ -159,7 +156,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
   protobuf::libprotobuf
   ${RE2_DEPS}
   ${COINOR_DEPS}
-  $<$<BOOL:${USE_CPLEX}>:CPLEX::CPLEX>
   $<$<BOOL:${USE_GLPK}>:GLPK::GLPK>
   $<$<BOOL:${USE_HIGHS}>:HIGHS::HIGHS>
   ${PDLP_DEPS}
@@ -266,6 +262,7 @@ foreach(SUBPROJECT IN ITEMS
  glop
  graph
  gurobi
+ cplex
  init
  linear_solver
  lp_data
