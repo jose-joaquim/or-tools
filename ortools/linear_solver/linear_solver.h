@@ -176,8 +176,38 @@ class MPSolverInterface;
 class MPSolverParameters;
 class MPVariable;
 
+class ProblemData;
+
 // There is a homonymous version taking a MPSolver::OptimizationProblemType.
 bool SolverTypeIsMip(MPModelRequest::SolverType solver_type);
+
+class MPModel {
+  MPModel();
+  ~MPModel();
+
+  ProblemData* problem_data;
+  MPSolver* solver;
+
+  std::vector<std::vector<MPVariable*> (*)(MPSolver*)> variable_makers;
+  std::vector<std::vector<MPConstraint*> (*)(MPSolver*)> constraint_makers;
+
+  absl::flat_hash_map<std::vector<MPVariable*> (*)(MPSolver*),
+                      std::vector<MPVariable*>>* variable_maker_to_variables;
+
+  std::unordered_map<MPConstraint* (*)(MPSolver*), std::vector<MPConstraint*>>*
+      constraint_maker_to_constraints;
+
+  void AddVariableMaker(std::vector<MPVariable*> (*)(MPSolver*));
+  void RemoveVariableMaker(std::vector<MPVariable*> (*)(MPSolver*));
+  // void ResetVariableMakers();
+
+  void AddConstraintMaker(std::vector<MPConstraint*> (*)(MPSolver*));
+  void RemoveConstraintMaker(std::vector<MPConstraint*> (*)(MPSolver*));
+  // void ResetConstraintMakers();
+
+  void RunVariableMakers();
+  void RunConstraintMakers();
+};
 
 /**
  * This mathematical programming (MP) solver class is the main class
@@ -236,7 +266,7 @@ class MPSolver {
 
   /// Create a solver with the given name and underlying solver backend.
   MPSolver(const std::string& name, OptimizationProblemType problem_type);
-  virtual ~MPSolver();
+  virtual ~MPSolver();  
 
   /**
    * Recommended factory method to create a MPSolver instance, especially in
