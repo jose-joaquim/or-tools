@@ -1254,6 +1254,8 @@ void MPSolver::Clear() {
     global_num_constraints_ += constraints_.size();
   }
   MutableObjective()->Clear();
+  /*gtl::STLDeleteElements(&variable_maker_to_variables);
+  gtl::STLDeleteElements(&constraint_maker_to_constraints);*/
   gtl::STLDeleteElements(&variables_);
   gtl::STLDeleteElements(&constraints_);
   if (variable_name_to_index_) {
@@ -1266,6 +1268,8 @@ void MPSolver::Clear() {
   constraint_is_extracted_.clear();
   interface_->Reset();
   solution_hint_.clear();
+
+
 }
 
 void MPSolver::Reset() { interface_->Reset(); }
@@ -1416,6 +1420,41 @@ bool MPSolver::HasIntegerVariables() const {
   }
   return false;
 }
+
+//void MPSolver::AddVariableMaker(std::vector<MPVariable*> (*maker)(MPSolver*)) {
+//  variable_makers.push_back(maker);
+//}
+
+//void MPSolver::AddConstraintMaker(
+//    std::function<std::vector<MPConstraint*>(MPSolver*)> maker) {
+//  constraint_makers.push_back(maker);
+//}
+//
+////void MPSolver::RemoveVariableMaker(std::function<std::vector<MPVariable*>(MPSolver*)> maker) {
+////    variable_makers.erase(maker);
+////}
+////
+////void MPSolver::RemoveConstraintMaker(
+////    std::function<std::vector<MPConstraint*>(MPSolver*)> maker) {
+////  constraint_makers.erase(maker);
+////}
+//
+//void MPSolver::ResetConstraintMakers() { constraint_makers.clear(); }
+//
+//void MPSolver::ResetVariableMakers() { variable_makers.clear(); }
+//
+//void MPSolver::RunConstraintMakers() {
+//  for (int i = 0; i < constraint_makers.size(); ++i) 
+//      /*(*constraint_maker_to_constraints)[constraint_makers[i]] =*/
+//        constraint_makers[i](this);
+//}
+
+//void MPSolver::RunVariableMakers() {
+//  for (int i = 0; i < variable_makers.size(); ++i) {
+//        (*variable_maker_to_variables)[variable_makers[i]] = variable_makers[i](this);
+//  }
+//}
+
 
 MPSolver::ResultStatus MPSolver::Solve() {
   MPSolverParameters default_param;
