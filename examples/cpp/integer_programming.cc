@@ -88,11 +88,52 @@ void RunAllExamples() {
   RunIntegerProgrammingExample("GLPK");
   RunIntegerProgrammingExample("CPLEX");
 }
+
+namespace test {
+class Data : public ProblemData {};
+
+std::vector<MPVariable*> MakeX(MPSolver* solver, ProblemData* data) {
+  auto x = solver->MakeBoolVar("aaa");
+
+  MPObjective* obj = solver->MutableObjective();
+  obj->SetCoefficient(x, 10);
+  obj->SetMaximization();
+  return std::vector<MPVariable*>{x};
+}
+
+std::vector<MPConstraint*> MakeFoo(MPSolver* solver, ProblemData* data) {
+  return std::vector<MPConstraint*>{solver->MakeRowConstraint(-1, 10)};
+}
+
+void RunTeste() {
+  Data* data = new Data();
+
+  std::string solver_id = "GUROBI";
+  MPSolver::OptimizationProblemType problem_type;
+  if (!MPSolver::ParseSolverType(solver_id, &problem_type)) {
+    LOG(INFO) << "Solver id " << solver_id << " not recognized";
+    return;
+  }
+
+  MPSolver* solver = new MPSolver("testing", problem_type);
+  LOG(INFO) << "created solver";
+
+  solver->EnableOutput();
+  MPModel model(solver, data, "");
+  model.AddVariableMaker(MakeX);
+  model.AddConstraintMaker(MakeFoo);
+  model.BuildModel();
+  model.Solve();
+}
+
+};  // namespace test
+
 }  // namespace operations_research
 
 int main(int argc, char** argv) {
-  InitGoogle(argv[0], &argc, &argv, true);
+  // InitGoogle(argv[0], &argc, &argv, true);
   absl::SetFlag(&FLAGS_stderrthreshold, 0);
-  operations_research::RunAllExamples();
+  // operations_research::RunAllExamples();
+  operations_research::test::RunTeste();
   return EXIT_SUCCESS;
 }
