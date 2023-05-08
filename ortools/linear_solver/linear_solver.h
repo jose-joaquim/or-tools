@@ -175,38 +175,67 @@ class MPObjective;
 class MPSolverInterface;
 class MPSolverParameters;
 class MPVariable;
-
-class ProblemData;
+class MPSolver;
 
 // There is a homonymous version taking a MPSolver::OptimizationProblemType.
 bool SolverTypeIsMip(MPModelRequest::SolverType solver_type);
 
+class ProblemData {
+ public:
+  std::string problem_name;
+};
+
 class MPModel {
-  MPModel();
+ public:
+  MPModel(MPSolver* solver, ProblemData* data, std::string solver_name);
   ~MPModel();
 
-  ProblemData* problem_data;
+  void SetSolverParameters(MPSolverParameters* const parameters);
+  void ResetSolverParameters();
+
+  void AddVariableMaker(std::vector<MPVariable*> (*)(MPSolver*, ProblemData*));
+  void RemoveVariableMaker(std::vector<MPVariable*> (*)(MPSolver*,
+                                                        ProblemData*));
+
+  void AddConstraintMaker(std::vector<MPConstraint*> (*)(MPSolver*,
+                                                         ProblemData*));
+  void RemoveConstraintMaker(std::vector<MPConstraint*> (*)(MPSolver*,
+                                                            ProblemData*));
+  void ResetConstraintMakers();
+  void ResetVariableMakers();
+
+  int Solve() const;
+  int BuildModel();
+
+  MPSolver* const GetSolver();
+  ProblemData* const GetProblemData();
+  MPSolverParameters* const GetSolverParameters();
+
+ private:
   MPSolver* solver;
+  ProblemData* problem_data;
+  MPSolverParameters* parameters;
 
-  std::vector<std::vector<MPVariable*> (*)(MPSolver*)> variable_makers;
-  std::vector<std::vector<MPConstraint*> (*)(MPSolver*)> constraint_makers;
-
-  absl::flat_hash_map<std::vector<MPVariable*> (*)(MPSolver*),
-                      std::vector<MPVariable*>>* variable_maker_to_variables;
-
-  std::unordered_map<MPConstraint* (*)(MPSolver*), std::vector<MPConstraint*>>*
-      constraint_maker_to_constraints;
-
-  void AddVariableMaker(std::vector<MPVariable*> (*)(MPSolver*));
-  void RemoveVariableMaker(std::vector<MPVariable*> (*)(MPSolver*));
-  // void ResetVariableMakers();
-
-  void AddConstraintMaker(std::vector<MPConstraint*> (*)(MPSolver*));
-  void RemoveConstraintMaker(std::vector<MPConstraint*> (*)(MPSolver*));
-  // void ResetConstraintMakers();
+  bool built;
 
   void RunVariableMakers();
   void RunConstraintMakers();
+
+  std::string solver_name;
+
+  std::vector<std::vector<MPVariable*> (*)(MPSolver*, ProblemData*)>
+      variable_makers;
+  std::vector<std::vector<MPConstraint*> (*)(MPSolver*, ProblemData*)>
+      constraint_makers;
+
+  absl::flat_hash_map<std::vector<MPVariable*> (*)(MPSolver*, ProblemData*),
+                      std::vector<MPVariable*>>* variable_maker_to_variables;
+
+  absl::flat_hash_map<std::vector<MPConstraint*> (*)(MPSolver*, ProblemData*),
+                      std::vector<MPConstraint*>>*
+      constraint_maker_to_constraints;
+
+  DISALLOW_COPY_AND_ASSIGN(MPModel);
 };
 
 /**
@@ -266,7 +295,7 @@ class MPSolver {
 
   /// Create a solver with the given name and underlying solver backend.
   MPSolver(const std::string& name, OptimizationProblemType problem_type);
-  virtual ~MPSolver();  
+  virtual ~MPSolver();
 
   /**
    * Recommended factory method to create a MPSolver instance, especially in
@@ -712,7 +741,7 @@ class MPSolver {
    *
    * Calling SetHint clears all previous hints.
    */
-  void SetHint(std::vector<std::pair<const MPVariable*, double> > hint);
+  void SetHint(std::vector<std::pair<const MPVariable*, double>> hint);
 
   /**
    * Advanced usage: possible basis status values for a variable and the slack
@@ -881,6 +910,7 @@ class MPSolver {
     return absl::ToInt64Milliseconds(DurationSinceConstruction());
   }
 
+  friend class MPModel;
   friend class GLPKInterface;
   friend class CLPInterface;
   friend class CBCInterface;
@@ -931,7 +961,7 @@ class MPSolver {
   // The vector of variables in the problem.
   std::vector<MPVariable*> variables_;
   // A map from a variable's name to its index in variables_.
-  mutable std::optional<absl::flat_hash_map<std::string, int> >
+  mutable std::optional<absl::flat_hash_map<std::string, int>>
       variable_name_to_index_;
   // Whether variables have been extracted to the underlying interface.
   std::vector<bool> variable_is_extracted_;
@@ -939,7 +969,7 @@ class MPSolver {
   // The vector of constraints in the problem.
   std::vector<MPConstraint*> constraints_;
   // A map from a constraint's name to its index in constraints_.
-  mutable std::optional<absl::flat_hash_map<std::string, int> >
+  mutable std::optional<absl::flat_hash_map<std::string, int>>
       constraint_name_to_index_;
   // Whether constraints have been extracted to the underlying interface.
   std::vector<bool> constraint_is_extracted_;
@@ -954,7 +984,7 @@ class MPSolver {
   //
   // TODO(user): replace by two vectors, a std::vector<bool> to indicate if a
   // hint is provided and a std::vector<double> for the hint value.
-  std::vector<std::pair<const MPVariable*, double> > solution_hint_;
+  std::vector<std::pair<const MPVariable*, double>> solution_hint_;
 
   absl::Duration time_limit_ = absl::InfiniteDuration();  // Default = No limit.
 
