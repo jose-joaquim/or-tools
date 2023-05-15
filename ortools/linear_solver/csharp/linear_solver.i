@@ -58,7 +58,7 @@ class MPSolutionResponse;
 
 %typemap(csclassmodifiers) operations_research::MPVariable "public partial class"
 %typemap(csclassmodifiers) operations_research::MPSolver "public partial class"
-
+%typemap(csclassmodifiers) operations_research::MPModel "public partial class"
 %template(DoubleVector) std::vector<double>;
 VECTOR_AS_CSHARP_ARRAY(double, double, double, DoubleVector);
 
@@ -77,12 +77,30 @@ CONVERT_VECTOR(operations_research::MPVariable, MPVariable)
 %unignore operations_research;
 
 // Rename all the exposed classes, by removing the "MP" prefix.
+%rename (ProblemData) operations_research::ProblemData;
+%rename (Model) operations_research::MPModel;                      
 %rename (Solver) operations_research::MPSolver;
 %rename (Variable) operations_research::MPVariable;
 %rename (Constraint) operations_research::MPConstraint;
 %rename (Objective) operations_research::MPObjective;
 %rename (SolverParameters) operations_research::MPSolverParameters;
 %unignore operations_research::MPSolver::SolverVersion;
+
+%typemap(csin) std::vector<operations_research::MPVariable*> (*)(operations_research::MPModel*) "$csinput"
+%typemap(cstype) std::vector<operations_research::MPVariable*> (*)(operations_research::MPModel*) "Model.VariableMakerDelegate";
+%typemap(imtype) std::vector<operations_research::MPVariable*> (*)(operations_research::MPModel*) "Model.VariableMakerDelegate";
+%typemap(csvarout) std::vector<operations_research::MPVariable*> (*)(operations_research::MPModel*) %{
+get {
+return $imcall;
+} %}
+
+%typemap(csin) std::vector<operations_research::MPConstraint*> (*)(operations_research::MPModel*) "$csinput"
+%typemap(cstype) std::vector<operations_research::MPConstraint*> (*)(operations_research::MPModel*) "Model.ConstraintMakerDelegate";
+%typemap(imtype) std::vector<operations_research::MPConstraint*> (*)(operations_research::MPModel*) "Model.ConstraintMakerDelegate";
+%typemap(csvarout) std::vector<operations_research::MPConstraint*> (*)(operations_research::MPModel*) %{
+get {
+return $imcall;
+} %}
 
 // Expose the MPSolver::OptimizationProblemType enum.
 %unignore operations_research::MPSolver::OptimizationProblemType;
@@ -127,6 +145,8 @@ CONVERT_VECTOR(operations_research::MPVariable, MPVariable)
 %unignore operations_research::MPSolver::MPSolver;
 %unignore operations_research::MPSolver::~MPSolver;
 %newobject operations_research::MPSolver::CreateSolver;
+%newobject operations_research::MPModel::CreateModel;
+%unignore operations_research::MPModel::CreateModel;
 %unignore operations_research::MPSolver::CreateSolver;
 %unignore operations_research::MPSolver::MakeBoolVar;
 %unignore operations_research::MPSolver::MakeIntVar;

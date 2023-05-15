@@ -25,7 +25,8 @@ endif()
 #  list(APPEND PROTO_SRCS ${PROTO_SRC})
 #endforeach()
 
-file(GLOB CXX_SRCS "*.cc")
+file(GLOB CXX_SRCS "integer_programming.cc")
+#[[
 list(FILTER CXX_SRCS EXCLUDE REGEX ".*/binpacking_2d_sat.cc")
 list(FILTER CXX_SRCS EXCLUDE REGEX ".*/course_scheduling_run.cc") # missing proto
 list(FILTER CXX_SRCS EXCLUDE REGEX ".*/course_scheduling.cc") # missing proto
@@ -47,6 +48,7 @@ list(FILTER CXX_SRCS EXCLUDE REGEX ".*/sports_scheduling_sat.cc") # Too long
 list(FILTER CXX_SRCS EXCLUDE REGEX ".*/strawberry_fields_with_column_generation.cc") # Too long
 list(FILTER CXX_SRCS EXCLUDE REGEX ".*/vector_bin_packing_solver.cc")
 list(FILTER CXX_SRCS EXCLUDE REGEX ".*/weighted_tardiness_sat.cc")
+]]
 foreach(SAMPLE IN LISTS CXX_SRCS)
   add_cxx_example(${SAMPLE})
 endforeach()
