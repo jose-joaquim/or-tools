@@ -141,12 +141,19 @@ return $imcall;
 
 %rename (Objective) operations_research::MPSolver::MutableObjective;
 
+%newobject operations_research::MPModel::CreateModel;
+%unignore operations_research::MPModel::CreateModel;
+%unignore operations_research::MPModel::AddVariableMaker;
+%unignore operations_research::MPModel::AddConstraintMaker;
+%unignore operations_research::MPModel::Solve;
+%unignore operations_research::MPModel::BuildModel;
+%unignore operations_research::MPModel::GetSolver;
+%unignore operations_research::MPModel::GetProblemData;
+
 // Expose the MPSolver's basic API, with trivial renames when needed.
 %unignore operations_research::MPSolver::MPSolver;
 %unignore operations_research::MPSolver::~MPSolver;
 %newobject operations_research::MPSolver::CreateSolver;
-%newobject operations_research::MPModel::CreateModel;
-%unignore operations_research::MPModel::CreateModel;
 %unignore operations_research::MPSolver::CreateSolver;
 %unignore operations_research::MPSolver::MakeBoolVar;
 %unignore operations_research::MPSolver::MakeIntVar;
