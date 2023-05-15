@@ -647,6 +647,15 @@ MPSolver::OptimizationProblemType MPSolver::ParseSolverTypeOrDie(
   return problem_type;
 }
 
+MPModel* MPModel::CreateModel() {
+  LOG(INFO) << "Creating Model";
+  auto solver = MPSolver::CreateSolver("gurobi");
+  auto pd = new ProblemData();
+  auto model = new MPModel(solver, pd, "gurobi");
+  LOG(INFO) << "Created.";
+  return model;
+}
+
 /* static */
 MPSolver* MPSolver::CreateSolver(const std::string& solver_id) {
   MPSolver::OptimizationProblemType problem_type;
@@ -1536,13 +1545,14 @@ bool MPSolver::HasIntegerVariables() const {
   return false;
 }
 
-void MPModel::AddVariableMaker(
-    std::vector<MPVariable*> (*maker)(MPSolver*, ProblemData*)) {
+void MPModel::AddVariableMaker(std::vector<MPVariable*> (*maker)(MPModel*)) {
+  built = false;
   variable_makers.push_back(maker);
 }
 
 void MPModel::AddConstraintMaker(
-    std::vector<MPConstraint*> (*maker)(MPSolver*, ProblemData*)) {
+    std::vector<MPConstraint*> (*maker)(MPModel*)) {
+  built = false;
   constraint_makers.push_back(maker);
 }
 
@@ -1557,18 +1567,17 @@ MPModel::MPModel(MPSolver* solver, ProblemData* data, std::string solver_name) {
   problem_data = data;
   parameters = nullptr;
   built = false;
+  optimization_status = MPSolver::NOT_SOLVED;
 
   if (solver_name.empty()) solver_name = "unnamed";
   this->solver_name = solver_name;
 
   variable_maker_to_variables =
-      new absl::flat_hash_map<std::vector<MPVariable*> (*)(MPSolver*,
-                                                           ProblemData*),
+      new absl::flat_hash_map<std::vector<MPVariable*> (*)(MPModel*),
                               std::vector<MPVariable*>>;
 
   constraint_maker_to_constraints =
-      new absl::flat_hash_map<std::vector<MPConstraint*> (*)(MPSolver*,
-                                                             ProblemData*),
+      new absl::flat_hash_map<std::vector<MPConstraint*> (*)(MPModel*),
                               std::vector<MPConstraint*>>;
 }
 
@@ -1588,10 +1597,9 @@ void MPModel::ResetSolverParameters() {
   parameters = nullptr;
 }
 
-void MPModel::RemoveVariableMaker(
-    std::vector<MPVariable*> (*maker)(MPSolver*, ProblemData*)) {
+void MPModel::RemoveVariableMaker(std::vector<MPVariable*> (*maker)(MPModel*)) {
   built = false;
-  std::vector<std::vector<MPVariable*> (*)(MPSolver*, ProblemData*)> new_makers;
+  std::vector<std::vector<MPVariable*> (*)(MPModel*)> new_makers;
   for (int i = 0; i < variable_makers.size(); ++i)
     if (variable_makers[i] != maker)
       new_makers.emplace_back(variable_makers[i]);
@@ -1600,10 +1608,9 @@ void MPModel::RemoveVariableMaker(
 }
 
 void MPModel::RemoveConstraintMaker(
-    std::vector<MPConstraint*> (*maker)(MPSolver*, ProblemData*)) {
+    std::vector<MPConstraint*> (*maker)(MPModel*)) {
   built = false;
-  std::vector<std::vector<MPConstraint*> (*)(MPSolver*, ProblemData*)>
-      new_makers;
+  std::vector<std::vector<MPConstraint*> (*)(MPModel*)> new_makers;
   for (int i = 0; i < constraint_makers.size(); ++i)
     if (constraint_makers[i] != maker)
       new_makers.emplace_back(constraint_makers[i]);
@@ -1611,22 +1618,28 @@ void MPModel::RemoveConstraintMaker(
   constraint_makers = new_makers;
 }
 
-void MPModel::ResetConstraintMakers() { constraint_makers.clear(); }
+void MPModel::ResetConstraintMakers() {
+  built = false;
+  constraint_makers.clear();
+}
 
-void MPModel::ResetVariableMakers() { variable_makers.clear(); }
+void MPModel::ResetVariableMakers() {
+  built = false;
+  variable_makers.clear();
+}
 
 void MPModel::RunConstraintMakers() {
   LOG(INFO) << "Running constraint makers...";
   for (int i = 0; i < constraint_makers.size(); ++i)
     (*constraint_maker_to_constraints)[constraint_makers[i]] =
-        constraint_makers[i](solver, problem_data);
+        constraint_makers[i](this);
 }
 
 void MPModel::RunVariableMakers() {
   LOG(INFO) << "Running variable makers...";
   for (int i = 0; i < variable_makers.size(); ++i) {
     (*variable_maker_to_variables)[variable_makers[i]] =
-        variable_makers[i](solver, problem_data);
+        variable_makers[i](this);
   }
 }
 
@@ -1637,9 +1650,9 @@ int MPModel::Solve() const {
   }
 
   if (parameters == nullptr)
-    solver->Solve();
+    optimization_status = solver->Solve();
   else
-    solver->Solve(*parameters);
+    optimization_status = solver->Solve(*parameters);
 
   return 0;
 }
@@ -1648,6 +1661,8 @@ int MPModel::BuildModel() {
   LOG(INFO) << "Start to build model...";
   RunVariableMakers();
   RunConstraintMakers();
+
+  built = true;
   return 0;
 }
 

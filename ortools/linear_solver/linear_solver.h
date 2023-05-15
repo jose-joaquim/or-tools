@@ -180,64 +180,6 @@ class MPSolver;
 // There is a homonymous version taking a MPSolver::OptimizationProblemType.
 bool SolverTypeIsMip(MPModelRequest::SolverType solver_type);
 
-class ProblemData {
- public:
-  std::string problem_name;
-};
-
-class MPModel {
- public:
-  MPModel(MPSolver* solver, ProblemData* data, std::string solver_name);
-  ~MPModel();
-
-  void SetSolverParameters(MPSolverParameters* const parameters);
-  void ResetSolverParameters();
-
-  void AddVariableMaker(std::vector<MPVariable*> (*)(MPSolver*, ProblemData*));
-  void RemoveVariableMaker(std::vector<MPVariable*> (*)(MPSolver*,
-                                                        ProblemData*));
-
-  void AddConstraintMaker(std::vector<MPConstraint*> (*)(MPSolver*,
-                                                         ProblemData*));
-  void RemoveConstraintMaker(std::vector<MPConstraint*> (*)(MPSolver*,
-                                                            ProblemData*));
-  void ResetConstraintMakers();
-  void ResetVariableMakers();
-
-  int Solve() const;
-  int BuildModel();
-
-  MPSolver* const GetSolver();
-  ProblemData* const GetProblemData();
-  MPSolverParameters* const GetSolverParameters();
-
- private:
-  MPSolver* solver;
-  ProblemData* problem_data;
-  MPSolverParameters* parameters;
-
-  bool built;
-
-  void RunVariableMakers();
-  void RunConstraintMakers();
-
-  std::string solver_name;
-
-  std::vector<std::vector<MPVariable*> (*)(MPSolver*, ProblemData*)>
-      variable_makers;
-  std::vector<std::vector<MPConstraint*> (*)(MPSolver*, ProblemData*)>
-      constraint_makers;
-
-  absl::flat_hash_map<std::vector<MPVariable*> (*)(MPSolver*, ProblemData*),
-                      std::vector<MPVariable*>>* variable_maker_to_variables;
-
-  absl::flat_hash_map<std::vector<MPConstraint*> (*)(MPSolver*, ProblemData*),
-                      std::vector<MPConstraint*>>*
-      constraint_maker_to_constraints;
-
-  DISALLOW_COPY_AND_ASSIGN(MPModel);
-};
-
 /**
  * This mathematical programming (MP) solver class is the main class
  * though which users build and solve problems.
@@ -1012,6 +954,62 @@ class MPSolver {
       bool check_model_validity, std::string* error_message);
 
   DISALLOW_COPY_AND_ASSIGN(MPSolver);
+};
+
+class ProblemData {
+ public:
+  std::string problem_name;
+};
+
+class MPModel {
+ public:
+  MPModel(MPSolver* solver, ProblemData* data, std::string solver_name);
+  ~MPModel();
+
+  static MPModel* CreateModel();
+
+  void SetSolverParameters(MPSolverParameters* const parameters);
+  void ResetSolverParameters();
+
+  void AddVariableMaker(std::vector<MPVariable*> (*)(MPModel*));
+  void RemoveVariableMaker(std::vector<MPVariable*> (*)(MPModel*));
+
+  void AddConstraintMaker(std::vector<MPConstraint*> (*)(MPModel*));
+  void RemoveConstraintMaker(std::vector<MPConstraint*> (*)(MPModel*));
+  void ResetConstraintMakers();
+  void ResetVariableMakers();
+
+  int Solve() const;
+  int BuildModel();
+
+  MPSolver* const GetSolver();
+  ProblemData* const GetProblemData();
+  MPSolverParameters* const GetSolverParameters();
+
+ private:
+  MPSolver* solver;
+  ProblemData* problem_data;
+  MPSolverParameters* parameters;
+
+  bool built;
+  mutable MPSolver::ResultStatus optimization_status;
+
+  void RunVariableMakers();
+  void RunConstraintMakers();
+
+  std::string solver_name;
+
+  std::vector<std::vector<MPVariable*> (*)(MPModel*)> variable_makers;
+  std::vector<std::vector<MPConstraint*> (*)(MPModel*)> constraint_makers;
+
+  absl::flat_hash_map<std::vector<MPVariable*> (*)(MPModel*),
+                      std::vector<MPVariable*>>* variable_maker_to_variables;
+
+  absl::flat_hash_map<std::vector<MPConstraint*> (*)(MPModel*),
+                      std::vector<MPConstraint*>>*
+      constraint_maker_to_constraints;
+
+  DISALLOW_COPY_AND_ASSIGN(MPModel);
 };
 
 inline bool SolverTypeIsMip(MPSolver::OptimizationProblemType solver_type) {

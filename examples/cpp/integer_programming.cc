@@ -92,17 +92,18 @@ void RunAllExamples() {
 namespace test {
 class Data : public ProblemData {};
 
-std::vector<MPVariable*> MakeX(MPSolver* solver, ProblemData* data) {
-  auto x = solver->MakeBoolVar("aaa");
+std::vector<MPVariable*> MakeX(MPModel* model) {
+  auto x = model->GetSolver()->MakeBoolVar("aaa");
 
-  MPObjective* obj = solver->MutableObjective();
+  MPObjective* obj = model->GetSolver()->MutableObjective();
   obj->SetCoefficient(x, 10);
   obj->SetMaximization();
   return std::vector<MPVariable*>{x};
 }
 
-std::vector<MPConstraint*> MakeFoo(MPSolver* solver, ProblemData* data) {
-  return std::vector<MPConstraint*>{solver->MakeRowConstraint(-1, 10)};
+std::vector<MPConstraint*> MakeFoo(MPModel* model) {
+  return std::vector<MPConstraint*>{
+      model->GetSolver()->MakeRowConstraint(-1, 10)};
 }
 
 void RunTeste() {
