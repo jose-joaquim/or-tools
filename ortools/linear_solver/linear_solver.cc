@@ -1476,6 +1476,16 @@ MPConstraint* MPSolver::MakeRowConstraint() {
   return MakeRowConstraint(-infinity(), infinity(), "");
 }
 
+std::vector<MPVariable*> MPModel::GetVariablesFromMaker(
+    std::vector<MPVariable*> (*maker)(MPModel*)) {
+  return (*variable_maker_to_variables)[maker];
+}
+
+std::vector<MPConstraint*> MPModel::GetConstraintsFromMaker(
+    std::vector<MPConstraint*> (*maker)(MPModel*)) {
+  return (*constraint_maker_to_constraints)[maker];
+}
+
 MPConstraint* MPSolver::MakeRowConstraint(double lb, double ub,
                                           const std::string& name) {
   const int constraint_index = NumConstraints();
@@ -1556,6 +1566,27 @@ void MPModel::AddConstraintMaker(
   constraint_makers.push_back(maker);
 }
 
+std::vector<std::vector<MPVariable*> (*)(MPModel*)>
+MPModel::GetVariableMakers() {
+  return variable_makers;
+}
+
+std::vector<std::vector<MPConstraint*> (*)(MPModel*)>
+MPModel::GetConstraintMakers() {
+  return constraint_makers;
+}
+
+void MPModel::SetVariablesOfMaker(std::vector<MPVariable*> (*maker)(MPModel*),
+                                  std::vector<MPVariable*> variables) {
+  (*variable_maker_to_variables)[maker] = variables;
+}
+
+void MPModel::SetConstraintsOfMaker(
+    std::vector<MPConstraint*> (*maker)(MPModel*),
+    std::vector<MPConstraint*> constraints) {
+  (*constraint_maker_to_constraints)[maker] = constraints;
+}
+
 MPSolver* const MPModel::GetSolver() { return solver; }
 
 ProblemData* const MPModel::GetProblemData() { return problem_data; }
@@ -1605,6 +1636,9 @@ void MPModel::RemoveVariableMaker(std::vector<MPVariable*> (*maker)(MPModel*)) {
       new_makers.emplace_back(variable_makers[i]);
 
   variable_makers = new_makers;
+
+  for (MPVariable*& v : (*variable_maker_to_variables)[maker]) delete v;
+  variable_maker_to_variables->erase(maker);
 }
 
 void MPModel::RemoveConstraintMaker(
@@ -1616,6 +1650,8 @@ void MPModel::RemoveConstraintMaker(
       new_makers.emplace_back(constraint_makers[i]);
 
   constraint_makers = new_makers;
+  for (MPConstraint*& c : (*constraint_maker_to_constraints)[maker]) delete c;
+  constraint_maker_to_constraints->erase(maker);
 }
 
 void MPModel::ResetConstraintMakers() {
@@ -1664,6 +1700,14 @@ int MPModel::BuildModel() {
 
   built = true;
   return 0;
+}
+
+std::vector<MPConstraint*> (*MPModel::GetConstraintMaker(int m))(MPModel*) {
+  return constraint_makers[m];
+}
+
+std::vector<MPVariable*> (*MPModel::GetVariableMaker(int m))(MPModel*) {
+  return variable_makers[m];
 }
 
 MPSolver::ResultStatus MPSolver::Solve() {

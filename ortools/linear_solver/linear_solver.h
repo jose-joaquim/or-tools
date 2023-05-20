@@ -972,12 +972,32 @@ class MPModel {
   void ResetSolverParameters();
 
   void AddVariableMaker(std::vector<MPVariable*> (*)(MPModel*));
-  void RemoveVariableMaker(std::vector<MPVariable*> (*)(MPModel*));
-
   void AddConstraintMaker(std::vector<MPConstraint*> (*)(MPModel*));
+
+  std::vector<MPVariable*> GetVariablesFromMaker(
+      std::vector<MPVariable*> (*)(MPModel*));
+  std::vector<MPConstraint*> GetConstraintsFromMaker(
+      std::vector<MPConstraint*> (*)(MPModel*));
+
+  void RemoveVariableMaker(std::vector<MPVariable*> (*)(MPModel*));
   void RemoveConstraintMaker(std::vector<MPConstraint*> (*)(MPModel*));
+
   void ResetConstraintMakers();
   void ResetVariableMakers();
+
+  void SetVariablesOfMaker(std::vector<MPVariable*> (*)(MPModel*),
+                           std::vector<MPVariable*>);
+  void SetConstraintsOfMaker(std::vector<MPConstraint*> (*)(MPModel*),
+                             std::vector<MPConstraint*>);
+
+  std::vector<std::vector<MPVariable*> (*)(MPModel*)> GetVariableMakers();
+  std::vector<std::vector<MPConstraint*> (*)(MPModel*)> GetConstraintMakers();
+
+  std::vector<MPVariable*> (*GetVariableMaker(int m))(MPModel*);
+  std::vector<MPConstraint*> (*GetConstraintMaker(int m))(MPModel*);
+
+  int GetNumberOfVariableMakers() { return variable_makers.size(); }
+  int GetNumberOfConstraintMakers() { return constraint_makers.size(); }
 
   int Solve() const;
   int BuildModel();
