@@ -89,6 +89,7 @@ CONVERT_VECTOR(operations_research::MPVariable, MPVariable)
 %typemap(csin) std::vector<operations_research::MPVariable*> (*)(operations_research::MPModel*) "$csinput"
 %typemap(cstype) std::vector<operations_research::MPVariable*> (*)(operations_research::MPModel*) "Model.VariableMakerDelegate";
 %typemap(imtype) std::vector<operations_research::MPVariable*> (*)(operations_research::MPModel*) "Model.VariableMakerDelegate";
+%typemap(csout) std::vector<operations_research::MPVariable*> (*)(operations_research::MPModel*) { return $imcall; }
 %typemap(csvarout) std::vector<operations_research::MPVariable*> (*)(operations_research::MPModel*) %{
 get {
 return $imcall;
@@ -96,6 +97,7 @@ return $imcall;
 
 %typemap(csin) std::vector<operations_research::MPConstraint*> (*)(operations_research::MPModel*) "$csinput"
 %typemap(cstype) std::vector<operations_research::MPConstraint*> (*)(operations_research::MPModel*) "Model.ConstraintMakerDelegate";
+%typemap(csout) std::vector<operations_research::MPConstraint*> (*)(operations_research::MPModel*) { return $imcall; }
 %typemap(imtype) std::vector<operations_research::MPConstraint*> (*)(operations_research::MPModel*) "Model.ConstraintMakerDelegate";
 %typemap(csvarout) std::vector<operations_research::MPConstraint*> (*)(operations_research::MPModel*) %{
 get {
@@ -141,14 +143,23 @@ return $imcall;
 
 %rename (Objective) operations_research::MPSolver::MutableObjective;
 
+%unignore operations_research::MPModel::MPModel;
+%unignore operations_research::MPModel::~MPModel;
 %newobject operations_research::MPModel::CreateModel;
 %unignore operations_research::MPModel::CreateModel;
 %unignore operations_research::MPModel::AddVariableMaker;
 %unignore operations_research::MPModel::AddConstraintMaker;
 %unignore operations_research::MPModel::Solve;
-%unignore operations_research::MPModel::BuildModel;
 %unignore operations_research::MPModel::GetSolver;
 %unignore operations_research::MPModel::GetProblemData;
+%unignore operations_research::MPModel::GetVariablesFromMaker;
+%unignore operations_research::MPModel::GetConstraintsFromMaker;
+%unignore operations_research::MPModel::SetVariablesOfMaker;
+%unignore operations_research::MPModel::SetConstraintsOfMaker;
+%unignore operations_research::MPModel::GetNumberOfVariableMakers;
+%unignore operations_research::MPModel::GetNumberOfConstraintMakers;
+%unignore operations_research::MPModel::GetVariableMaker;
+%unignore operations_research::MPModel::GetConstraintMaker;
 
 // Expose the MPSolver's basic API, with trivial renames when needed.
 %unignore operations_research::MPSolver::MPSolver;
