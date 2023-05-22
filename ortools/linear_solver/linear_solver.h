@@ -991,6 +991,7 @@ class MPModel {
   int Solve() const;
   int BuildModel();
 
+  MPObjective* const Objective();
   MPSolver* const GetSolver();
   ProblemData* const GetProblemData();
   MPSolverParameters* const GetSolverParameters();
