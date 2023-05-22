@@ -1587,6 +1587,15 @@ void MPModel::SetConstraintsOfMaker(
   (*constraint_maker_to_constraints)[maker] = constraints;
 }
 
+MPObjective* const MPModel::Objective() {
+  if (solver == nullptr) {
+    LOG(WARNING) << "You can't have an objective instance wihtout a valid "
+                    "solver instance. Therefore, returning null.";
+    return nullptr;
+  }
+  return solver->MutableObjective();
+}
+
 MPSolver* const MPModel::GetSolver() { return solver; }
 
 ProblemData* const MPModel::GetProblemData() { return problem_data; }
