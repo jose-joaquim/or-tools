@@ -1587,7 +1587,7 @@ void MPModel::SetConstraintsOfMaker(
   (*constraint_maker_to_constraints)[maker] = constraints;
 }
 
-MPObjective* const MPModel::Objective() {
+MPObjective* const MPModel::GetObjectiveFunction() {
   if (solver == nullptr) {
     LOG(WARNING) << "You can't have an objective instance wihtout a valid "
                     "solver instance. Therefore, returning null.";
@@ -1688,10 +1688,26 @@ void MPModel::RunVariableMakers() {
   }
 }
 
-int MPModel::Solve() const {
+void MPModel::RunObjectiveFunctionMaker() { objective_maker(this); }
+
+void MPModel::SetObjectiveFunctionMaker(void (*maker)(MPModel*)) {
+  objective_maker = maker;
+}
+
+void MPModel::ResetObjectiveFunctionMaker() { objective_maker = nullptr; }
+
+void (*MPModel::GetObjectiveFunctionMaker())(MPModel*) {
+  return objective_maker;
+}
+
+void MPModel::SetBuildStatus(bool flag) { built = flag; }
+
+bool MPModel::GetBuildStatus() { return built; }
+
+MPSolver::ResultStatus MPModel::Solve() const {
   if (!built) {
     LOG(WARNING) << "Model is not built. Build it first!";
-    return 1;
+    return MPSolver::NOT_SOLVED;
   }
 
   if (parameters == nullptr)
@@ -1699,15 +1715,17 @@ int MPModel::Solve() const {
   else
     optimization_status = solver->Solve(*parameters);
 
-  return 0;
+  return optimization_status;
 }
 
 int MPModel::BuildModel() {
-  LOG(INFO) << "Start to build model...";
+  LOG(INFO) << "Start build model";
   RunVariableMakers();
   RunConstraintMakers();
+  RunObjectiveFunctionMaker();
 
   built = true;
+  LOG(INFO) << "Model built";
   return 0;
 }
 
