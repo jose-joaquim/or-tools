@@ -5,11 +5,13 @@ namespace Google.OrTools.LinearSolver
 
     public partial class Model
     {
+        public delegate void MakerDelegate(Model model);
         public delegate Variable[] VariableMakerDelegate(Model model);
         public delegate Constraint[] ConstraintMakerDelegate(Model model);
 
         public void RunVariableMakers()
         {
+            Console.WriteLine("Running Variable Makers");
             for (int m = 0; m < GetNumberOfVariableMakers(); ++m)
             {
                 VariableMakerDelegate _maker = GetVariableMaker(m);
@@ -20,6 +22,7 @@ namespace Google.OrTools.LinearSolver
 
         public void RunConstraintMakers()
         {
+            Console.WriteLine("Running Constraint Maker");
             for (int m = 0; m < GetNumberOfConstraintMakers(); ++m)
             {
                 ConstraintMakerDelegate _maker = GetConstraintMaker(m);
@@ -28,11 +31,20 @@ namespace Google.OrTools.LinearSolver
             }
         }
 
+        public void RunObjectiveFunctionMaker()
+        {
+            Console.WriteLine("Running Objective Function Maker");
+            MakerDelegate objectiveDelegate = GetObjectiveFunctionMaker();
+            objectiveDelegate(this);
+        }
+
         public void BuildModel()
         {
-            Console.WriteLine("Building model...");
+            Console.WriteLine("Start build model");
             RunVariableMakers();
             RunConstraintMakers();
+            RunObjectiveFunctionMaker();
+            SetBuildStatus(true);
             Console.WriteLine("Model built");
         }
     }

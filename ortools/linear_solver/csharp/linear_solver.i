@@ -104,6 +104,15 @@ get {
 return $imcall;
 } %}
 
+%typemap(csin) void (*)(operations_research::MPModel*) "$csinput"
+%typemap(cstype) void (*)(operations_research::MPModel*) "Model.MakerDelegate";
+%typemap(csout) void (*)(operations_research::MPModel*) { return $imcall; }
+%typemap(imtype) void (*)(operations_research::MPModel*) "Model.MakerDelegate";
+%typemap(csvarout) void (*)(operations_research::MPModel*) %{
+get {
+return $imcall;
+} %}
+
 // Expose the MPSolver::OptimizationProblemType enum.
 %unignore operations_research::MPSolver::OptimizationProblemType;
 %unignore operations_research::MPSolver::CLP_LINEAR_PROGRAMMING;
@@ -160,6 +169,13 @@ return $imcall;
 %unignore operations_research::MPModel::GetNumberOfConstraintMakers;
 %unignore operations_research::MPModel::GetVariableMaker;
 %unignore operations_research::MPModel::GetConstraintMaker;
+%unignore operations_research::MPModel::SetObjectiveFunctionMaker;
+%unignore operations_research::MPModel::ResetObjectiveFunctionMaker;
+%unignore operations_research::MPModel::GetObjectiveFunctionMaker;
+%unignore operations_research::MPModel::RunObjectiveFunctionMaker;
+%unignore operations_research::MPModel::GetObjectiveFunction;
+%unignore operations_research::MPModel::SetBuildStatus;
+%unignore operations_research::MPModel::GetBuildStatus;
 
 // Expose the MPSolver's basic API, with trivial renames when needed.
 %unignore operations_research::MPSolver::MPSolver;

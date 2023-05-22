@@ -962,6 +962,7 @@ class MPModel {
 
   void AddVariableMaker(std::vector<MPVariable*> (*)(MPModel*));
   void AddConstraintMaker(std::vector<MPConstraint*> (*)(MPModel*));
+  void SetObjectiveFunctionMaker(void (*)(MPModel*));
 
   std::vector<MPVariable*> GetVariablesFromMaker(
       std::vector<MPVariable*> (*)(MPModel*));
@@ -973,6 +974,7 @@ class MPModel {
 
   void ResetConstraintMakers();
   void ResetVariableMakers();
+  void ResetObjectiveFunctionMaker();
 
   void SetVariablesOfMaker(std::vector<MPVariable*> (*)(MPModel*),
                            std::vector<MPVariable*>);
@@ -984,14 +986,17 @@ class MPModel {
 
   std::vector<MPVariable*> (*GetVariableMaker(int m))(MPModel*);
   std::vector<MPConstraint*> (*GetConstraintMaker(int m))(MPModel*);
+  void (*GetObjectiveFunctionMaker())(MPModel*);
 
   int GetNumberOfVariableMakers() { return variable_makers.size(); }
   int GetNumberOfConstraintMakers() { return constraint_makers.size(); }
 
-  int Solve() const;
+  MPSolver::ResultStatus Solve() const;
   int BuildModel();
+  void SetBuildStatus(bool);
+  bool GetBuildStatus();
 
-  MPObjective* const Objective();
+  MPObjective* const GetObjectiveFunction();
   MPSolver* const GetSolver();
   ProblemData* const GetProblemData();
   MPSolverParameters* const GetSolverParameters();
@@ -1006,11 +1011,13 @@ class MPModel {
 
   void RunVariableMakers();
   void RunConstraintMakers();
+  void RunObjectiveFunctionMaker();
 
   std::string solver_name;
 
   std::vector<std::vector<MPVariable*> (*)(MPModel*)> variable_makers;
   std::vector<std::vector<MPConstraint*> (*)(MPModel*)> constraint_makers;
+  void (*objective_maker)(MPModel*);
 
   absl::flat_hash_map<std::vector<MPVariable*> (*)(MPModel*),
                       std::vector<MPVariable*>>* variable_maker_to_variables;
