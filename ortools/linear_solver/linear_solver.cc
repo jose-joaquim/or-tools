@@ -633,12 +633,18 @@ MPSolver::OptimizationProblemType MPSolver::ParseSolverTypeOrDie(
   return problem_type;
 }
 
-MPModel* MPModel::CreateModel() {
-  LOG(INFO) << "Creating Model";
-  auto solver = MPSolver::CreateSolver("gurobi");
-  auto pd = new ProblemData();
-  auto model = new MPModel(solver, pd, "gurobi");
-  LOG(INFO) << "Created.";
+MPModel* MPModel::CreateModel(const std::string& solver_id,
+                              ProblemData* problem_data) {
+  MPSolver* solver = MPSolver::CreateSolver(solver_id);
+
+  if (solver == nullptr) {
+    LOG(WARNING) << "Unable to initialize a MPSolver instance!";
+    return nullptr;
+  }
+
+  MPModel* model = new MPModel(solver, problem_data);
+
+  LOG(INFO) << "Successfully created a MPModel instance.";
   return model;
 }
 
@@ -1471,29 +1477,28 @@ void MPModel::SetConstraintsOfMaker(
 }
 
 MPObjective* const MPModel::GetObjectiveFunction() {
-  if (solver == nullptr) {
+  if (solver_ == nullptr) {
     LOG(WARNING) << "You can't have an objective instance wihtout a valid "
                     "solver instance. Therefore, returning null.";
     return nullptr;
   }
-  return solver->MutableObjective();
+  return solver_->MutableObjective();
 }
 
-MPSolver* const MPModel::GetSolver() { return solver; }
+MPSolver* const MPModel::GetSolver() { return solver_.get(); }
 
-ProblemData* const MPModel::GetProblemData() { return problem_data; }
+ProblemData* const MPModel::GetProblemData() { return problem_data_.get(); }
 
-MPSolverParameters* const MPModel::GetSolverParameters() { return parameters; }
+MPSolverParameters* const MPModel::GetSolverParameters() {
+  return parameters_.get();
+}
 
-MPModel::MPModel(MPSolver* solver, ProblemData* data, std::string solver_name) {
-  this->solver = solver;
-  problem_data = data;
-  parameters = nullptr;
+MPModel::MPModel(MPSolver* solver, ProblemData* data) {
+  this->solver_.reset(solver);
+  problem_data_.reset(data);
+  parameters_ = nullptr;
   built = false;
   optimization_status = MPSolver::NOT_SOLVED;
-
-  if (solver_name.empty()) solver_name = "unnamed";
-  this->solver_name = solver_name;
 
   variable_maker_to_variables =
       new absl::flat_hash_map<std::vector<MPVariable*> (*)(MPModel*),
@@ -1507,18 +1512,13 @@ MPModel::MPModel(MPSolver* solver, ProblemData* data, std::string solver_name) {
 MPModel::~MPModel() {
   delete variable_maker_to_variables;
   delete constraint_maker_to_constraints;
-  delete parameters;
-  delete solver;
 }
 
 void MPModel::SetSolverParameters(MPSolverParameters* const parameters) {
-  this->parameters = parameters;
+  this->parameters_.reset(parameters);
 }
 
-void MPModel::ResetSolverParameters() {
-  delete parameters;
-  parameters = nullptr;
-}
+void MPModel::ResetSolverParameters() { parameters_ = nullptr; }
 
 void MPModel::RemoveVariableMaker(std::vector<MPVariable*> (*maker)(MPModel*)) {
   built = false;
@@ -1571,7 +1571,10 @@ void MPModel::RunVariableMakers() {
   }
 }
 
-void MPModel::RunObjectiveFunctionMaker() { objective_maker(this); }
+void MPModel::RunObjectiveFunctionMaker() {
+  if (objective_maker == nullptr) LOG(FATAL) << "Objective maker is not set!";
+  objective_maker(this);
+}
 
 void MPModel::SetObjectiveFunctionMaker(void (*maker)(MPModel*)) {
   objective_maker = maker;
@@ -1593,10 +1596,10 @@ MPSolver::ResultStatus MPModel::Solve() const {
     return MPSolver::NOT_SOLVED;
   }
 
-  if (parameters == nullptr)
-    optimization_status = solver->Solve();
+  if (parameters_ == nullptr)
+    optimization_status = solver_->Solve();
   else
-    optimization_status = solver->Solve(*parameters);
+    optimization_status = solver_->Solve(*parameters_);
 
   return optimization_status;
 }

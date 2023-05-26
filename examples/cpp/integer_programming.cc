@@ -110,21 +110,14 @@ void RunTeste() {
   Data* data = new Data();
 
   std::string solver_id = "GUROBI";
-  MPSolver::OptimizationProblemType problem_type;
-  if (!MPSolver::ParseSolverType(solver_id, &problem_type)) {
-    LOG(INFO) << "Solver id " << solver_id << " not recognized";
-    return;
-  }
 
-  MPSolver* solver = new MPSolver("testing", problem_type);
-  LOG(INFO) << "created solver";
+  MPModel* model = MPModel::CreateModel(solver_id, data);
+  model->AddVariableMaker(MakeX);
+  model->AddConstraintMaker(MakeFoo);
+  model->BuildModel();
 
-  solver->EnableOutput();
-  MPModel model(solver, data, "");
-  model.AddVariableMaker(MakeX);
-  model.AddConstraintMaker(MakeFoo);
-  model.BuildModel();
-  model.Solve();
+  model->GetSolver()->EnableOutput();
+  model->Solve();
 }
 
 };  // namespace test

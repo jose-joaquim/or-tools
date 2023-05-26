@@ -952,10 +952,10 @@ class ProblemData {
 
 class MPModel {
  public:
-  MPModel(MPSolver* solver, ProblemData* data, std::string solver_name);
+  MPModel(MPSolver* solver, ProblemData* data);
   ~MPModel();
 
-  static MPModel* CreateModel();
+  static MPModel* CreateModel(const std::string&, ProblemData*);
 
   void SetSolverParameters(MPSolverParameters* const parameters);
   void ResetSolverParameters();
@@ -984,8 +984,8 @@ class MPModel {
   std::vector<std::vector<MPVariable*> (*)(MPModel*)> GetVariableMakers();
   std::vector<std::vector<MPConstraint*> (*)(MPModel*)> GetConstraintMakers();
 
-  std::vector<MPVariable*> (*GetVariableMaker(int m))(MPModel*);
-  std::vector<MPConstraint*> (*GetConstraintMaker(int m))(MPModel*);
+  std::vector<MPVariable*> (*GetVariableMaker(int))(MPModel*);
+  std::vector<MPConstraint*> (*GetConstraintMaker(int))(MPModel*);
   void (*GetObjectiveFunctionMaker())(MPModel*);
 
   int GetNumberOfVariableMakers() { return variable_makers.size(); }
@@ -1002,9 +1002,9 @@ class MPModel {
   MPSolverParameters* const GetSolverParameters();
 
  private:
-  MPSolver* solver;
-  ProblemData* problem_data;
-  MPSolverParameters* parameters;
+  std::unique_ptr<MPSolver> solver_;
+  std::unique_ptr<ProblemData> problem_data_;
+  std::unique_ptr<MPSolverParameters> parameters_;
 
   bool built;
   mutable MPSolver::ResultStatus optimization_status;
@@ -1012,8 +1012,6 @@ class MPModel {
   void RunVariableMakers();
   void RunConstraintMakers();
   void RunObjectiveFunctionMaker();
-
-  std::string solver_name;
 
   std::vector<std::vector<MPVariable*> (*)(MPModel*)> variable_makers;
   std::vector<std::vector<MPConstraint*> (*)(MPModel*)> constraint_makers;

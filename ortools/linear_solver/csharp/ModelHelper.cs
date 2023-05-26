@@ -38,6 +38,28 @@ namespace Google.OrTools.LinearSolver
             objectiveDelegate(this);
         }
 
+        public void AddVariableMakers(params Variable[] makers)
+        {
+            for (int m = 0; i < makers.Length; ++m)
+                AddVariableMaker(makers[m]);
+        }
+
+        public void AddConstraintMakers(params Constraint[] makers)
+        {
+            for (int m = 0; i < makers.Length; ++m)
+                AddVariableMaker(makers[m]);
+        }
+
+        public void AddAllVariableMakersFromClass(Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddAllConstraintMakersFromClass(Type type)
+        {
+            throw new NotImplementedException();
+        }
+
         public void BuildModel()
         {
             Console.WriteLine("Start build model");
