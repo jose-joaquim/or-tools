@@ -38,26 +38,16 @@ namespace Google.OrTools.LinearSolver
             objectiveDelegate(this);
         }
 
-        public void AddVariableMakers(params Variable[] makers)
+        public void AddVariableMakers(params VariableMakerDelegate[] makers)
         {
-            for (int m = 0; i < makers.Length; ++m)
+            for (int m = 0; m < makers.Length; ++m)
                 AddVariableMaker(makers[m]);
         }
 
-        public void AddConstraintMakers(params Constraint[] makers)
+        public void AddConstraintMakers(params ConstraintMakerDelegate[] makers)
         {
-            for (int m = 0; i < makers.Length; ++m)
-                AddVariableMaker(makers[m]);
-        }
-
-        public void AddAllVariableMakersFromClass(Type type)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void AddAllConstraintMakersFromClass(Type type)
-        {
-            throw new NotImplementedException();
+            for (int m = 0; m < makers.Length; ++m)
+                AddConstraintMaker(makers[m]);
         }
 
         public void BuildModel()
