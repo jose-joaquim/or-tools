@@ -1694,6 +1694,7 @@ void MPModel::RunObjectiveFunctionMaker() {
 }
 
 void MPModel::SetObjectiveFunctionMaker(void (*maker)(MPModel*)) {
+  solver_->MutableObjective()->Clear();
   objective_maker = maker;
 }
 
