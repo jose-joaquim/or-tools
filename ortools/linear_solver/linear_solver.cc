@@ -643,9 +643,19 @@ MPModel* MPModel::CreateModel(const std::string& solver_id,
   }
 
   MPModel* model = new MPModel(solver, problem_data);
-
-  LOG(INFO) << "Successfully created a MPModel instance.";
   return model;
+}
+
+void MPModel::ResetSolver() {
+  solver_->Clear();
+  variable_makers.clear();
+  constraint_makers.clear();
+  objective_maker = nullptr;
+
+  parameters_.reset();
+
+  built = false;
+  optimization_status = MPSolver::NOT_SOLVED;
 }
 
 /* static */

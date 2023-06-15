@@ -976,6 +976,8 @@ class MPModel {
   void ResetVariableMakers();
   void ResetObjectiveFunctionMaker();
 
+  void ResetSolver();
+
   void SetVariablesOfMaker(std::vector<MPVariable*> (*)(MPModel*),
                            std::vector<MPVariable*>);
   void SetConstraintsOfMaker(std::vector<MPConstraint*> (*)(MPModel*),

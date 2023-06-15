@@ -171,11 +171,16 @@ return $imcall;
 %unignore operations_research::MPModel::GetConstraintMaker;
 %unignore operations_research::MPModel::SetObjectiveFunctionMaker;
 %unignore operations_research::MPModel::ResetObjectiveFunctionMaker;
+%unignore operations_research::MPModel::ResetVariableMakers;
+%unignore operations_research::MPModel::ResetConstraintMakers;
+%unignore operations_research::MPModel::ResetSolverParameters;
+%unignore operations_research::MPModel::ResetSolver;
 %unignore operations_research::MPModel::GetObjectiveFunctionMaker;
 %unignore operations_research::MPModel::RunObjectiveFunctionMaker;
 %unignore operations_research::MPModel::GetObjectiveFunction;
 %unignore operations_research::MPModel::SetBuildStatus;
 %unignore operations_research::MPModel::GetBuildStatus;
+
 
 // Expose the MPSolver's basic API, with trivial renames when needed.
 %unignore operations_research::MPSolver::MPSolver;
