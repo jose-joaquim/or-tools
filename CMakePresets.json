@@ -1,0 +1,23 @@
+{
+  "version": 5,
+  "configurePresets": [
+    {
+      "name": "main_config",
+      "displayName": "ortools @ accenture",
+      "description": "main configure preset",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "BUILD_DEPS": "ON",
+          "BUILD_JSON": "OFF",
+          "CMAKE_EXPORT_COMPILE_COMMANDS":true
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "main_build",
+      "configurePreset": "main_config"
+    }
+  ]
+}

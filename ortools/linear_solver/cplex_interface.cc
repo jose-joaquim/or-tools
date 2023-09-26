@@ -117,7 +117,7 @@ class CplexInterface : public MPSolverInterface {
 
     if (CheckSolutionIsSynchronized()) {
       double kappa = CPX_NAN;
-      CHECK_STATUS(CPXgetdblquality(mEnv, mLp, &kappa, CPX_EXACT_KAPPA));
+      CHECK_STATUS(CPXXgetdblquality(mEnv, mLp, &kappa, CPX_EXACT_KAPPA));
       return kappa;
     }
     LOG(DFATAL) << "Cannot get exact condition number without solution";
@@ -211,29 +211,29 @@ CplexInterface::CplexInterface(MPSolver* const solver, bool mip)
       mRstat() {
   int status;
 
-  mEnv = CPXopenCPLEX(&status);
+  mEnv = CPXXopenCPLEX(&status);
   CHECK_STATUS(status);
   DCHECK(mEnv != nullptr);  // should not be NULL if status=0
 
   char const* name = solver_->name_.c_str();
-  mLp = CPXcreateprob(mEnv, &status, name);
+  mLp = CPXXcreateprob(mEnv, &status, name);
   CHECK_STATUS(status);
   DCHECK(mLp != nullptr);  // should not be NULL if status=0
 
-  CHECK_STATUS(CPXchgobjsen(mEnv, mLp, maximize_ ? CPX_MAX : CPX_MIN));
-  if (mMip) CHECK_STATUS(CPXchgprobtype(mEnv, mLp, CPXPROB_MILP));
+  CHECK_STATUS(CPXXchgobjsen(mEnv, mLp, maximize_ ? CPX_MAX : CPX_MIN));
+  if (mMip) CHECK_STATUS(CPXXchgprobtype(mEnv, mLp, CPXPROB_MILP));
 }
 
 CplexInterface::~CplexInterface() {
-  CHECK_STATUS(CPXfreeprob(mEnv, &mLp));
-  CHECK_STATUS(CPXcloseCPLEX(&mEnv));
+  CHECK_STATUS(CPXXfreeprob(mEnv, &mLp));
+  CHECK_STATUS(CPXXcloseCPLEX(&mEnv));
 }
 
 std::string CplexInterface::SolverVersion() const {
   // We prefer CPXversionnumber() over CPXversion() since the
   // former will never pose any encoding issues.
   int version = 0;
-  CHECK_STATUS(CPXversionnumber(mEnv, &version));
+  CHECK_STATUS(CPXXversionnumber(mEnv, &version));
 
   int const major = version / 1000000;
   version -= major * 1000000;
@@ -252,16 +252,16 @@ std::string CplexInterface::SolverVersion() const {
 void CplexInterface::Reset() {
   // Instead of explicitly clearing all modeling objects we
   // just delete the problem object and allocate a new one.
-  CHECK_STATUS(CPXfreeprob(mEnv, &mLp));
+  CHECK_STATUS(CPXXfreeprob(mEnv, &mLp));
 
   int status;
   const char* const name = solver_->name_.c_str();
-  mLp = CPXcreateprob(mEnv, &status, name);
+  mLp = CPXXcreateprob(mEnv, &status, name);
   CHECK_STATUS(status);
   DCHECK(mLp != nullptr);  // should not be NULL if status=0
 
-  CHECK_STATUS(CPXchgobjsen(mEnv, mLp, maximize_ ? CPX_MAX : CPX_MIN));
-  if (mMip) CHECK_STATUS(CPXchgprobtype(mEnv, mLp, CPXPROB_MILP));
+  CHECK_STATUS(CPXXchgobjsen(mEnv, mLp, maximize_ ? CPX_MAX : CPX_MIN));
+  if (mMip) CHECK_STATUS(CPXXchgprobtype(mEnv, mLp, CPXPROB_MILP));
 
   ResetExtractionInformation();
   mCstat = 0;
@@ -270,7 +270,7 @@ void CplexInterface::Reset() {
 
 void CplexInterface::SetOptimizationDirection(bool maximize) {
   InvalidateSolutionSynchronization();
-  CPXchgobjsen(mEnv, mLp, maximize ? CPX_MAX : CPX_MIN);
+  CPXXchgobjsen(mEnv, mLp, maximize ? CPX_MAX : CPX_MIN);
 }
 
 void CplexInterface::SetVariableBounds(int var_index, double lb, double ub) {
@@ -292,7 +292,7 @@ void CplexInterface::SetVariableBounds(int var_index, double lb, double ub) {
       char const lu[2] = {'L', 'U'};
       double const bd[2] = {lb, ub};
       CPXDIM const idx[2] = {var_index, var_index};
-      CHECK_STATUS(CPXchgbds(mEnv, mLp, 2, idx, lu, bd));
+      CHECK_STATUS(CPXXchgbds(mEnv, mLp, 2, idx, lu, bd));
     } else {
       // Variable is not yet extracted. It is sufficient to just mark
       // the modeling object "out of sync"
@@ -324,9 +324,9 @@ void CplexInterface::SetVariableInteger(int var_index, bool integer) {
         // Variable is extracted. Change the type immediately.
         // TODO: Should we check the current type and don't do anything
         //       in case the type does not change?
-        DCHECK_LE(var_index, CPXgetnumcols(mEnv, mLp));
+        DCHECK_LE(var_index, CPXXgetnumcols(mEnv, mLp));
         char const type = integer ? CPX_INTEGER : CPX_CONTINUOUS;
-        CHECK_STATUS(CPXchgctype(mEnv, mLp, 1, &var_index, &type));
+        CHECK_STATUS(CPXXchgctype(mEnv, mLp, 1, &var_index, &type));
       } else
         InvalidateModelSynchronization();
     } else {
@@ -418,9 +418,9 @@ void CplexInterface::SetConstraintBounds(int index, double lb, double ub) {
       char sense;
       double range, rhs;
       MakeRhs(lb, ub, rhs, sense, range);
-      CHECK_STATUS(CPXchgrhs(mEnv, mLp, 1, &index, &lb));
-      CHECK_STATUS(CPXchgsense(mEnv, mLp, 1, &index, &sense));
-      CHECK_STATUS(CPXchgrngval(mEnv, mLp, 1, &index, &range));
+      CHECK_STATUS(CPXXchgrhs(mEnv, mLp, 1, &index, &lb));
+      CHECK_STATUS(CPXXchgsense(mEnv, mLp, 1, &index, &sense));
+      CHECK_STATUS(CPXXchgrngval(mEnv, mLp, 1, &index, &range));
     } else {
       // Constraint is not yet extracted. It is sufficient to mark the
       // modeling object as "out of sync"
@@ -471,7 +471,7 @@ void CplexInterface::SetCoefficient(MPConstraint* const constraint,
       // update the modeling object
       DCHECK_LE(row, last_constraint_index_);
       DCHECK_LE(col, last_variable_index_);
-      CHECK_STATUS(CPXchgcoef(mEnv, mLp, row, col, new_value));
+      CHECK_STATUS(CPXXchgcoef(mEnv, mLp, row, col, new_value));
     } else {
       // If either row or column is not yet extracted then we can
       // defer the update to ExtractModel()
@@ -503,7 +503,7 @@ void CplexInterface::ClearConstraint(MPConstraint* const constraint) {
     unique_ptr<CPXDIM[]> rowind(new CPXDIM[len]);
     unique_ptr<CPXDIM[]> colind(new CPXDIM[len]);
     unique_ptr<double[]> val(new double[len]);
-    CPXDIM j = 0;
+    CPXNNZ j = 0;
     const auto& coeffs = constraint->coefficients_;
     for (auto it(coeffs.begin()); it != coeffs.end(); ++it) {
       CPXDIM const col = it->first->index();
@@ -516,7 +516,7 @@ void CplexInterface::ClearConstraint(MPConstraint* const constraint) {
     }
     if (j)
       CHECK_STATUS(
-          CPXchgcoeflist(mEnv, mLp, j, rowind.get(), colind.get(), val.get()));
+          CPXXchgcoeflist(mEnv, mLp, j, rowind.get(), colind.get(), val.get()));
   }
 }
 
@@ -537,7 +537,7 @@ void CplexInterface::SetObjectiveCoefficient(MPVariable const* const variable,
 
   if (supportIncrementalExtraction ||
       (slowUpdates & SlowSetObjectiveCoefficient)) {
-    CHECK_STATUS(CPXchgobj(mEnv, mLp, 1, &col, &coefficient));
+    CHECK_STATUS(CPXXchgobj(mEnv, mLp, 1, &col, &coefficient));
   } else
     InvalidateModelSynchronization();
 }
@@ -545,7 +545,7 @@ void CplexInterface::SetObjectiveCoefficient(MPVariable const* const variable,
 void CplexInterface::SetObjectiveOffset(double value) {
   // Changing the objective offset is O(1), so we always do it immediately.
   InvalidateSolutionSynchronization();
-  CHECK_STATUS(CPXEsetobjoffset(mEnv, mLp, value));
+  CHECK_STATUS(CPXXEsetobjoffset(mEnv, mLp, value));
 }
 
 void CplexInterface::ClearObjective() {
@@ -557,7 +557,7 @@ void CplexInterface::ClearObjective() {
   // but to perform the update immediately.
 
   if (supportIncrementalExtraction || (slowUpdates & SlowClearObjective)) {
-    CPXDIM const cols = CPXgetnumcols(mEnv, mLp);
+    CPXDIM const cols = CPXXgetnumcols(mEnv, mLp);
     unique_ptr<CPXDIM[]> ind(new CPXDIM[cols]);
     unique_ptr<double[]> zero(new double[cols]);
     CPXDIM j = 0;
@@ -572,8 +572,8 @@ void CplexInterface::ClearObjective() {
         ++j;
       }
     }
-    if (j > 0) CHECK_STATUS(CPXchgobj(mEnv, mLp, j, ind.get(), zero.get()));
-    CHECK_STATUS(CPXEsetobjoffset(mEnv, mLp, 0.0));
+    if (j > 0) CHECK_STATUS(CPXXchgobj(mEnv, mLp, j, ind.get(), zero.get()));
+    CHECK_STATUS(CPXXEsetobjoffset(mEnv, mLp, 0.0));
   } else
     InvalidateModelSynchronization();
 }
@@ -584,15 +584,15 @@ int64_t CplexInterface::iterations() const {
   int iter;
   if (!CheckSolutionIsSynchronized()) return kUnknownNumberOfIterations;
   if (mMip)
-    return static_cast<int64_t>(CPXgetmipitcnt(mEnv, mLp));
+    return static_cast<int64_t>(CPXXgetmipitcnt(mEnv, mLp));
   else
-    return static_cast<int64_t>(CPXgetitcnt(mEnv, mLp));
+    return static_cast<int64_t>(CPXXgetitcnt(mEnv, mLp));
 }
 
 int64_t CplexInterface::nodes() const {
   if (mMip) {
     if (!CheckSolutionIsSynchronized()) return kUnknownNumberOfNodes;
-    return static_cast<int64_t>(CPXgetnodecnt(mEnv, mLp));
+    return static_cast<int64_t>(CPXXgetnodecnt(mEnv, mLp));
   } else {
     LOG(DFATAL) << "Number of nodes only available for discrete problems";
     return kUnknownNumberOfNodes;
@@ -625,10 +625,10 @@ MPSolver::BasisStatus CplexInterface::row_status(int constraint_index) const {
 
   if (CheckSolutionIsSynchronized()) {
     if (!mRstat) {
-      CPXDIM const rows = CPXgetnumrows(mEnv, mLp);
+      CPXDIM const rows = CPXXgetnumrows(mEnv, mLp);
       unique_ptr<int[]> data(new int[rows]);
       mRstat.swap(data);
-      CHECK_STATUS(CPXgetbase(mEnv, mLp, 0, mRstat.get()));
+      CHECK_STATUS(CPXXgetbase(mEnv, mLp, 0, mRstat.get()));
     }
   } else
     mRstat = 0;
@@ -650,10 +650,10 @@ MPSolver::BasisStatus CplexInterface::column_status(int variable_index) const {
 
   if (CheckSolutionIsSynchronized()) {
     if (!mCstat) {
-      CPXDIM const cols = CPXgetnumcols(mEnv, mLp);
+      CPXDIM const cols = CPXXgetnumcols(mEnv, mLp);
       unique_ptr<int[]> data(new int[cols]);
       mCstat.swap(data);
-      CHECK_STATUS(CPXgetbase(mEnv, mLp, mCstat.get(), 0));
+      CHECK_STATUS(CPXXgetbase(mEnv, mLp, mCstat.get(), 0));
     }
   } else
     mCstat = 0;
@@ -785,39 +785,39 @@ void CplexInterface::ExtractNewVariables() {
             }
           }
           --cmatbeg;
-          CHECK_STATUS(CPXaddcols(mEnv, mLp, newcols, nonzeros, obj.get(),
-                                  cmatbeg, cmatind.get(), cmatval.get(),
-                                  lb.get(), ub.get(),
-                                  have_names ? colname.get() : 0));
+          CHECK_STATUS(CPXXaddcols(mEnv, mLp, newcols, nonzeros, obj.get(),
+                                   cmatbeg, cmatind.get(), cmatval.get(),
+                                   lb.get(), ub.get(),
+                                   have_names ? colname.get() : 0));
         }
       }
       if (use_newcols) {
         // Either incremental extraction is not supported or none of
         // the new variables did intersect an existing constraint.
-        // We can just use CPXnewcols() to create the new variables.
-        CHECK_STATUS(CPXnewcols(mEnv, mLp, newcols, obj.get(), lb.get(),
-                                ub.get(), mMip ? ctype.get() : 0,
-                                have_names ? colname.get() : 0));
+        // We can just use CPXXnewcols() to create the new variables.
+        CHECK_STATUS(CPXXnewcols(mEnv, mLp, newcols, obj.get(), lb.get(),
+                                 ub.get(), mMip ? ctype.get() : 0,
+                                 have_names ? colname.get() : 0));
       } else {
         // Incremental extraction: we must update the ctype of the
-        // newly created variables (CPXaddcols() does not allow
+        // newly created variables (CPXXaddcols() does not allow
         // specifying the ctype)
         if (mMip) {
           // Query the actual number of columns in case we did not
           // manage to extract all columns.
-          int const cols = CPXgetnumcols(mEnv, mLp);
+          int const cols = CPXXgetnumcols(mEnv, mLp);
           unique_ptr<CPXDIM[]> ind(new CPXDIM[newcols]);
           for (int j = last_extracted; j < cols; ++j)
             ind[j - last_extracted] = j;
-          CHECK_STATUS(CPXchgctype(mEnv, mLp, cols - last_extracted, ind.get(),
-                                   ctype.get()));
+          CHECK_STATUS(CPXXchgctype(mEnv, mLp, cols - last_extracted, ind.get(),
+                                    ctype.get()));
         }
       }
     } catch (...) {
       // Undo all changes in case of error.
-      CPXDIM const cols = CPXgetnumcols(mEnv, mLp);
+      CPXDIM const cols = CPXXgetnumcols(mEnv, mLp);
       if (cols > last_extracted)
-        (void)CPXdelcols(mEnv, mLp, last_extracted, cols - 1);
+        (void)CPXXdelcols(mEnv, mLp, last_extracted, cols - 1);
       std::vector<MPVariable*> const& variables = solver_->variables();
       int const size = variables.size();
       for (int j = last_extracted; j < size; ++j)
@@ -850,7 +850,7 @@ void CplexInterface::ExtractNewConstraints() {
     InvalidateSolutionSynchronization();
 
     CPXDIM newCons = total - offset;
-    CPXDIM const cols = CPXgetnumcols(mEnv, mLp);
+    CPXDIM const cols = CPXXgetnumcols(mEnv, mLp);
     DCHECK_EQ(last_variable_index_, cols);
 
     CPXDIM const chunk = 10;  // max number of rows to add in one shot
@@ -912,19 +912,19 @@ void CplexInterface::ExtractNewConstraints() {
           name[nextRow] = ct->name().empty() ? 0 : ct->name().c_str();
         }
         if (nextRow > 0) {
-          CHECK_STATUS(CPXaddrows(mEnv, mLp, 0, nextRow, nextNz, rhs.get(),
-                                  sense.get(), rmatbeg.get(), rmatind.get(),
-                                  rmatval.get(), 0, name.get()));
+          CHECK_STATUS(CPXXaddrows(mEnv, mLp, 0, nextRow, nextNz, rhs.get(),
+                                   sense.get(), rmatbeg.get(), rmatind.get(),
+                                   rmatval.get(), 0, name.get()));
           if (haveRanges) {
             CHECK_STATUS(
-                CPXchgrngval(mEnv, mLp, nextRow, rngind.get(), rngval.get()));
+                CPXXchgrngval(mEnv, mLp, nextRow, rngind.get(), rngval.get()));
           }
         }
       }
     } catch (...) {
       // Undo all changes in case of error.
-      CPXDIM const rows = CPXgetnumrows(mEnv, mLp);
-      if (rows > offset) (void)CPXdelrows(mEnv, mLp, offset, rows - 1);
+      CPXDIM const rows = CPXXgetnumrows(mEnv, mLp);
+      if (rows > offset) (void)CPXXdelrows(mEnv, mLp, offset, rows - 1);
       std::vector<MPConstraint*> const& constraints = solver_->constraints();
       int const size = constraints.size();
       for (int i = offset; i < size; ++i) set_constraint_as_extracted(i, false);
@@ -938,7 +938,7 @@ void CplexInterface::ExtractObjective() {
   // NOTE: The code assumes that the objective expression does not contain
   //       any non-zero duplicates.
 
-  CPXDIM const cols = CPXgetnumcols(mEnv, mLp);
+  CPXDIM const cols = CPXXgetnumcols(mEnv, mLp);
   DCHECK_EQ(last_variable_index_, cols);
 
   unique_ptr<CPXDIM[]> ind(new CPXDIM[cols]);
@@ -957,8 +957,8 @@ void CplexInterface::ExtractObjective() {
     }
   }
 
-  CHECK_STATUS(CPXchgobj(mEnv, mLp, cols, ind.get(), val.get()));
-  CHECK_STATUS(CPXEsetobjoffset(mEnv, mLp, solver_->Objective().offset()));
+  CHECK_STATUS(CPXXchgobj(mEnv, mLp, cols, ind.get(), val.get()));
+  CHECK_STATUS(CPXXEsetobjoffset(mEnv, mLp, solver_->Objective().offset()));
 }
 
 // ------ Parameters  -----
@@ -970,7 +970,7 @@ void CplexInterface::SetParameters(const MPSolverParameters& param) {
 
 void CplexInterface::SetRelativeMipGap(double value) {
   if (mMip) {
-    CHECK_STATUS(CPXsetdblparam(mEnv, CPX_PARAM_EPGAP, value));
+    CHECK_STATUS(CPXXsetdblparam(mEnv, CPX_PARAM_EPGAP, value));
   } else {
     LOG(WARNING) << "The relative MIP gap is only available "
                  << "for discrete problems.";
@@ -978,11 +978,11 @@ void CplexInterface::SetRelativeMipGap(double value) {
 }
 
 void CplexInterface::SetPrimalTolerance(double value) {
-  CHECK_STATUS(CPXsetdblparam(mEnv, CPX_PARAM_EPRHS, value));
+  CHECK_STATUS(CPXXsetdblparam(mEnv, CPX_PARAM_EPRHS, value));
 }
 
 void CplexInterface::SetDualTolerance(double value) {
-  CHECK_STATUS(CPXsetdblparam(mEnv, CPX_PARAM_EPOPT, value));
+  CHECK_STATUS(CPXXsetdblparam(mEnv, CPX_PARAM_EPOPT, value));
 }
 
 void CplexInterface::SetPresolveMode(int value) {
@@ -991,10 +991,10 @@ void CplexInterface::SetPresolveMode(int value) {
 
   switch (presolve) {
     case MPSolverParameters::PRESOLVE_OFF:
-      CHECK_STATUS(CPXsetintparam(mEnv, CPX_PARAM_PREIND, CPX_OFF));
+      CHECK_STATUS(CPXXsetintparam(mEnv, CPX_PARAM_PREIND, CPX_OFF));
       return;
     case MPSolverParameters::PRESOLVE_ON:
-      CHECK_STATUS(CPXsetintparam(mEnv, CPX_PARAM_PREIND, CPX_ON));
+      CHECK_STATUS(CPXXsetintparam(mEnv, CPX_PARAM_PREIND, CPX_ON));
       return;
   }
   SetIntegerParamToUnsupportedValue(MPSolverParameters::PRESOLVE, value);
@@ -1007,12 +1007,12 @@ void CplexInterface::SetScalingMode(int value) {
 
   switch (scaling) {
     case MPSolverParameters::SCALING_OFF:
-      CHECK_STATUS(CPXsetintparam(mEnv, CPX_PARAM_SCAIND, -1));
+      CHECK_STATUS(CPXXsetintparam(mEnv, CPX_PARAM_SCAIND, -1));
       break;
     case MPSolverParameters::SCALING_ON:
       // TODO: 0 is equilibrium scaling (the default), CPLEX also supports
       //       1 aggressive scaling
-      CHECK_STATUS(CPXsetintparam(mEnv, CPX_PARAM_SCAIND, 0));
+      CHECK_STATUS(CPXXsetintparam(mEnv, CPX_PARAM_SCAIND, 0));
       break;
   }
 }
@@ -1040,19 +1040,19 @@ void CplexInterface::SetLpAlgorithm(int value) {
   if (alg == CPX_ALG_NONE)
     SetIntegerParamToUnsupportedValue(MPSolverParameters::LP_ALGORITHM, value);
   else {
-    CHECK_STATUS(CPXsetintparam(mEnv, CPX_PARAM_LPMETHOD, alg));
+    CHECK_STATUS(CPXXsetintparam(mEnv, CPX_PARAM_LPMETHOD, alg));
     if (mMip) {
       // For MIP we have to change two more parameters to specify the
       // algorithm that is used to solve LP relaxations.
-      CHECK_STATUS(CPXsetintparam(mEnv, CPX_PARAM_STARTALG, alg));
-      CHECK_STATUS(CPXsetintparam(mEnv, CPX_PARAM_SUBALG, alg));
+      CHECK_STATUS(CPXXsetintparam(mEnv, CPX_PARAM_STARTALG, alg));
+      CHECK_STATUS(CPXXsetintparam(mEnv, CPX_PARAM_SUBALG, alg));
     }
   }
 }
 
 bool CplexInterface::ReadParameterFile(std::string const& filename) {
   // Return true on success and false on error.
-  return CPXreadcopyparam(mEnv, filename.c_str()) == 0;
+  return CPXXreadcopyparam(mEnv, filename.c_str()) == 0;
 }
 
 std::string CplexInterface::ValidFileExtensionForParameterFile() const {
@@ -1062,22 +1062,22 @@ std::string CplexInterface::ValidFileExtensionForParameterFile() const {
 void CplexInterface::SetMipFocus(int value) {
   switch (value) {
     case MPSolverParameters::BALANCED:
-      CPXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_BALANCED);
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_BALANCED);
       break;
     case MPSolverParameters::FEASIBILITY:
-      CPXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_FEASIBILITY);
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_FEASIBILITY);
       break;
     case MPSolverParameters::OPTIMALITY:
-      CPXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_OPTIMALITY);
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_OPTIMALITY);
       break;
     case MPSolverParameters::BESTBOUND:
-      CPXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_BESTBOUND);
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_BESTBOUND);
       break;
     case MPSolverParameters::HIDDENFEAS:
-      CPXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_HIDDENFEAS);
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_HIDDENFEAS);
       break;
     case MPSolverParameters::HEURISTIC:
-      CPXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_HEURISTIC);
+      CPXXsetintparam(mEnv, CPXPARAM_Emphasis_MIP, CPX_MIPEMPHASIS_HEURISTIC);
       break;
     default:
       SetIntegerParamToUnsupportedValue(MPSolverParameters::FOCUS, value);
@@ -1111,7 +1111,7 @@ absl::Status SetSolverSpecificParameters(const std::string& parameters,
       absl::StrAppend(&param_string, "CPXPARAM_",
                       key_value[0]);  // TODO: retirar isso aqui
       int param_code = -1, type;
-      int ok = CPXgetparamnum(*mEnv, param_string.c_str(), &param_code);
+      int ok = CPXXgetparamnum(*mEnv, param_string.c_str(), &param_code);
 
       if (ok != 0) {
         const std::string current_message =
@@ -1121,7 +1121,7 @@ absl::Status SetSolverSpecificParameters(const std::string& parameters,
         continue;
       }
 
-      ok = CPXgetparamtype(*mEnv, param_code, &type);
+      ok = CPXXgetparamtype(*mEnv, param_code, &type);
 
       if (ok != 0) {
         const std::string current_message =
@@ -1134,19 +1134,19 @@ absl::Status SetSolverSpecificParameters(const std::string& parameters,
       ok = 1;
       switch (type) {
         case CPX_PARAMTYPE_INT:
-          ok = CPXsetintparam(*mEnv, param_code,
-                              std::stoi(key_value[1].c_str()));
+          ok = CPXXsetintparam(*mEnv, param_code,
+                               std::stoi(key_value[1].c_str()));
           break;
         case CPX_PARAMTYPE_DOUBLE:
-          ok = CPXsetdblparam(*mEnv, param_code,
-                              std::stod(key_value[1].c_str()));
+          ok = CPXXsetdblparam(*mEnv, param_code,
+                               std::stod(key_value[1].c_str()));
           break;
         case CPX_PARAMTYPE_STRING:
-          ok = CPXsetstrparam(*mEnv, param_code, key_value[1].c_str());
+          ok = CPXXsetstrparam(*mEnv, param_code, key_value[1].c_str());
           break;
         case CPX_PARAMTYPE_LONG:
-          ok = CPXsetlongparam(*mEnv, param_code,
-                               std::stol(key_value[1].c_str()));
+          ok = CPXXsetlongparam(*mEnv, param_code,
+                                std::stol(key_value[1].c_str()));
           break;
         default:
           LOG(DFATAL)
@@ -1193,10 +1193,10 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
     case MPSolverParameters::INCREMENTALITY_OFF:
       Reset(); /* This should not be required but re-extracting everything
                 * may be faster, so we do it. */
-      CHECK_STATUS(CPXsetintparam(mEnv, CPX_PARAM_ADVIND, 0));
+      CHECK_STATUS(CPXXsetintparam(mEnv, CPX_PARAM_ADVIND, 0));
       break;
     case MPSolverParameters::INCREMENTALITY_ON:
-      CHECK_STATUS(CPXsetintparam(mEnv, CPX_PARAM_ADVIND, 2));
+      CHECK_STATUS(CPXXsetintparam(mEnv, CPX_PARAM_ADVIND, 2));
       break;
   }
 
@@ -1211,11 +1211,11 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
 
   // Set log level.
   CHECK_STATUS(
-      CPXsetintparam(mEnv, CPX_PARAM_SCRIND, quiet() ? CPX_OFF : CPX_ON));
+      CPXXsetintparam(mEnv, CPX_PARAM_SCRIND, quiet() ? CPX_OFF : CPX_ON));
 
   if (!solver_->solution_hint_.empty()) {
     int const sol_count = solver_->solution_hint_.size();
-    long long int beg[1] = {0};
+    CPXNNZ beg[1] = {0};
     int* varindices = new int[sol_count];
     double* values = new double[sol_count];
 
@@ -1229,7 +1229,7 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
   // Set parameters.
   // NOTE: We must invoke SetSolverSpecificParametersAsString() _first_.
   //       Its current implementation invokes ReadParameterFile() which in
-  //       turn invokes CPXreadcopyparam(). The latter will _overwrite_
+  //       turn invokes CPXXreadcopyparam(). The latter will _overwrite_
   //       all current parameter settings in the environment.
   solver_->SetSolverSpecificParametersAsString(
       solver_->solver_specific_parameter_string_);
@@ -1237,7 +1237,7 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
   if (solver_->time_limit()) {
     VLOG(1) << "Setting time limit = " << solver_->time_limit() << " ms.";
     CHECK_STATUS(
-        CPXsetdblparam(mEnv, CPX_PARAM_TILIM, solver_->time_limit() * 1e-3));
+        CPXXsetdblparam(mEnv, CPX_PARAM_TILIM, solver_->time_limit() * 1e-3));
   }
 
   // Solve.
@@ -1245,13 +1245,13 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
   // still allow us to query useful information.
   timer.Restart();
   if (mMip) {
-    status = CPXmipopt(mEnv, mLp);
+    status = CPXXmipopt(mEnv, mLp);
   } else {
-    status = CPXlpopt(mEnv, mLp);
+    status = CPXXlpopt(mEnv, mLp);
   }
 
   // Disable screen output right after solve
-  (void)CPXsetintparam(mEnv, CPX_PARAM_SCRIND, CPX_OFF);
+  (void)CPXXsetintparam(mEnv, CPX_PARAM_SCRIND, CPX_OFF);
 
   if (status) {
     VLOG(1) << absl::StrFormat("Failed to optimize MIP. Error %d", status);
@@ -1261,17 +1261,17 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
     VLOG(1) << absl::StrFormat("Solved in %.3f seconds.", timer.Get());
   }
 
-  int const cpxstat = CPXgetstat(mEnv, mLp);
+  int const cpxstat = CPXXgetstat(mEnv, mLp);
   VLOG(1) << absl::StrFormat("CPLEX solution status %d.", cpxstat);
 
   // Figure out what solution we have.
   int solnmethod, solntype, pfeas, dfeas;
-  CHECK_STATUS(CPXsolninfo(mEnv, mLp, &solnmethod, &solntype, &pfeas, &dfeas));
+  CHECK_STATUS(CPXXsolninfo(mEnv, mLp, &solnmethod, &solntype, &pfeas, &dfeas));
   bool const feasible = pfeas != 0;
 
   // Get problem dimensions for solution queries below.
-  CPXDIM const rows = CPXgetnumrows(mEnv, mLp);
-  CPXDIM const cols = CPXgetnumcols(mEnv, mLp);
+  CPXDIM const rows = CPXXgetnumrows(mEnv, mLp);
+  CPXDIM const cols = CPXXgetnumcols(mEnv, mLp);
   DCHECK_EQ(rows, solver_->constraints_.size());
   DCHECK_EQ(cols, solver_->variables_.size());
 
@@ -1279,9 +1279,9 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
   objective_value_ = CPX_NAN;
   best_objective_bound_ = CPX_NAN;
   if (feasible) {
-    CHECK_STATUS(CPXgetobjval(mEnv, mLp, &objective_value_));
+    CHECK_STATUS(CPXXgetobjval(mEnv, mLp, &objective_value_));
     if (mMip) {
-      CHECK_STATUS(CPXgetbestobjval(mEnv, mLp, &best_objective_bound_));
+      CHECK_STATUS(CPXXgetbestobjval(mEnv, mLp, &best_objective_bound_));
     }
   }
   VLOG(1) << "objective=" << objective_value_
@@ -1293,7 +1293,7 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
     if (feasible) {
       if (cols > 0) {
         unique_ptr<double[]> x(new double[cols]);
-        CHECK_STATUS(CPXgetx(mEnv, mLp, x.get(), 0, cols - 1));
+        CHECK_STATUS(CPXXgetx(mEnv, mLp, x.get(), 0, cols - 1));
         for (int i = 0; i < solver_->variables_.size(); ++i) {
           MPVariable* const var = solver_->variables_[i];
           var->set_solution_value(x[i]);
@@ -1315,8 +1315,8 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
     if (cols > 0) {
       unique_ptr<double[]> x(new double[cols]);
       unique_ptr<double[]> dj(new double[cols]);
-      if (feasible) CHECK_STATUS(CPXgetx(mEnv, mLp, x.get(), 0, cols - 1));
-      if (dfeas) CHECK_STATUS(CPXgetdj(mEnv, mLp, dj.get(), 0, cols - 1));
+      if (feasible) CHECK_STATUS(CPXXgetx(mEnv, mLp, x.get(), 0, cols - 1));
+      if (dfeas) CHECK_STATUS(CPXXgetdj(mEnv, mLp, dj.get(), 0, cols - 1));
       for (int i = 0; i < solver_->variables_.size(); ++i) {
         MPVariable* const var = solver_->variables_[i];
         var->set_solution_value(x[i]);
@@ -1340,7 +1340,7 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
 
     if (rows > 0) {
       unique_ptr<double[]> pi(new double[rows]);
-      if (dfeas) CHECK_STATUS(CPXgetpi(mEnv, mLp, pi.get(), 0, rows - 1));
+      if (dfeas) CHECK_STATUS(CPXXgetpi(mEnv, mLp, pi.get(), 0, rows - 1));
       for (int i = 0; i < solver_->constraints_.size(); ++i) {
         MPConstraint* const ct = solver_->constraints_[i];
         bool dual = false;
@@ -1388,48 +1388,6 @@ MPSolver::ResultStatus CplexInterface::Solve(MPSolverParameters const& param) {
 
 MPSolverInterface* BuildCplexInterface(bool mip, MPSolver* const solver) {
   return new CplexInterface(solver, mip);
-}
-
-bool CplexInterface::SetSolverSpecificParametersAsString(
-    const std::string& parameters) {
-  if (parameters.empty()) return true;
-  for (const auto parameter : absl::StrSplit(parameters, absl::ByAnyChar(","),
-                                             absl::SkipWhitespace())) {
-    std::vector<std::string> key_value =
-        absl::StrSplit(parameter, absl::ByAnyChar("="), absl::SkipWhitespace());
-    if (key_value.size() != 2) {
-      LOG(WARNING) << absl::StrFormat(
-          "Cannot parse parameter '%s'. Expected format is 'parameter/name = "
-          "value'",
-          parameter);
-      continue;
-    }
-    std::string identifier = key_value[0];
-    absl::RemoveExtraAsciiWhitespace(&identifier);
-
-    std::string value = key_value[1];
-    absl::RemoveExtraAsciiWhitespace(&value);
-
-    try {
-      if (identifier.find("LogFile") != std::string::npos) {
-        CPXXsetlogfilename(mEnv, value.c_str(), "w");
-      } else {
-        std::string delimiter = ".";
-        if (value.find(delimiter) == std::string::npos) {
-          (void)CPXXsetintparam(mEnv, std::stoi(identifier), std::stoi(value));
-        } else {
-          (void)CPXXsetdblparam(mEnv, std::stoi(identifier), std::stod(value));
-        }
-        VLOG(2) << absl::StrFormat("Set parameter %s to %s", identifier, value);
-      }
-    } catch (...) {
-      LOG(WARNING) << absl::StrFormat(
-          "Cannot parse parameter '%s'. Expected format is 'parameter/name = "
-          "value'",
-          identifier);
-    }
-  }
-  return true;
 }
 
 }  // namespace operations_research

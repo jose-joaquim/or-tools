@@ -259,23 +259,9 @@ typedef long long CPXLONG;
 #endif
 #endif
 
-#if CPX_APIMODEL == CPX_APIMODEL_SMALL
 typedef CPXINT CPXDIM;
-#elif CPX_APIMODEL == CPX_APIMODEL_LARGE
-typedef CPXINT CPXDIM;
-#endif
-
-#if CPX_APIMODEL == CPX_APIMODEL_SMALL
-typedef CPXINT CPXNNZ;
-#elif CPX_APIMODEL == CPX_APIMODEL_LARGE
 typedef CPXLONG CPXNNZ;
-#endif
-
-#if CPX_APIMODEL == CPX_APIMODEL_SMALL
 typedef CPXLONG CPXCNT;
-#elif CPX_APIMODEL == CPX_APIMODEL_LARGE
-typedef CPXLONG CPXCNT;
-#endif
 
 typedef char* CPXCHARptr;        /* to simplify CPXPUBLIC syntax */
 typedef const char* CPXCCHARptr; /* to simplify CPXPUBLIC syntax */
@@ -286,86 +272,93 @@ absl::StatusOr<CPXENVptr> GetCplexEnv();
 absl::Status LoadCplexDynamicLibrary(std::vector<std::string> potential_paths);
 
 extern std::function<int(CPXCENVptr, CPXCLPptr, int*, int*, int*, int*)>
-    CPXsolninfo;
-extern std::function<CPXCNT(CPXCENVptr, CPXCLPptr)> CPXgetmipitcnt;
-extern std::function<CPXCNT(CPXCENVptr, CPXCLPptr)> CPXgetitcnt;
-extern std::function<CPXENVptr(int*)> CPXopenCPLEX;
+    CPXXsolninfo;
+extern std::function<CPXCNT(CPXCENVptr, CPXCLPptr)> CPXXgetmipitcnt;
+extern std::function<CPXCNT(CPXCENVptr, CPXCLPptr)> CPXXgetitcnt;
+extern std::function<CPXENVptr(int*)> CPXXopenCPLEX;
 extern std::function<int(CPXCENVptr, CPXLPptr, int const*, int const*,
                          double const*, double const*, double const*,
                          double const*)>
-    CPXcopystart;
-extern std::function<int(CPXCENVptr, CPXCLPptr, double*, int)> CPXgetdblquality;
-extern std::function<int(CPXCENVptr, CPXLPptr*)> CPXfreeprob;
-extern std::function<int(CPXENVptr*)> CPXcloseCPLEX;
-extern std::function<int(CPXCENVptr, int*)> CPXversionnumber;
-extern std::function<CPXLPptr(CPXCENVptr, int*, char const*)> CPXcreateprob;
-extern std::function<int(CPXCENVptr, CPXLPptr, int)> CPXchgobjsen;
-extern std::function<int(CPXCENVptr, CPXLPptr, int)> CPXchgprobtype;
+    CPXXcopystart;
+extern std::function<int(CPXCENVptr, CPXCLPptr, double*, int)>
+    CPXXgetdblquality;
+extern std::function<int(CPXCENVptr, CPXLPptr*)> CPXXfreeprob;
+extern std::function<int(CPXENVptr*)> CPXXcloseCPLEX;
+extern std::function<int(CPXCENVptr, int*)> CPXXversionnumber;
+extern std::function<CPXLPptr(CPXCENVptr, int*, char const*)> CPXXcreateprob;
+extern std::function<int(CPXCENVptr, CPXLPptr, int)> CPXXchgobjsen;
+extern std::function<int(CPXCENVptr, CPXLPptr, int)> CPXXchgprobtype;
 extern std::function<int(CPXCENVptr env, CPXLPptr lp, CPXDIM cnt,
                          CPXDIM const* indices, char const* lu,
                          double const* bd)>
-    CPXchgbds;
-extern std::function<int(CPXENVptr, int, CPXDIM)> CPXsetintparam;
+    CPXXchgbds;
+extern std::function<int(CPXENVptr, int, CPXDIM)> CPXXsetintparam;
 extern std::function<int(CPXCENVptr, CPXCLPptr, double*, CPXDIM, CPXDIM)>
-    CPXgetdj;
+    CPXXgetdj;
 extern std::function<int(CPXCENVptr, CPXCLPptr, double*, CPXDIM, CPXDIM)>
-    CPXgetpi;
+    CPXXgetpi;
 extern std::function<int(CPXCENVptr, CPXCLPptr, double*, CPXDIM, CPXDIM)>
-    CPXgetx;
-extern std::function<CPXDIM(CPXCENVptr, CPXCLPptr)> CPXgetnumrows;
-extern std::function<CPXDIM(CPXCENVptr, CPXCLPptr)> CPXgetnumcols;
-extern std::function<int(CPXCENVptr, CPXCLPptr)> CPXgetstat;
+    CPXXgetx;
+extern std::function<CPXDIM(CPXCENVptr, CPXCLPptr)> CPXXgetnumrows;
+extern std::function<CPXDIM(CPXCENVptr, CPXCLPptr)> CPXXgetnumcols;
+extern std::function<int(CPXCENVptr, CPXCLPptr)> CPXXgetstat;
 extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*,
                          char const*)>
-    CPXchgctype;
-extern std::function<int(CPXCENVptr, CPXCLPptr, double*)> CPXgetobjval;
-extern std::function<int(CPXCENVptr, CPXCLPptr, double*)> CPXgetbestobjval;
-extern std::function<int(CPXENVptr, int, double)> CPXsetdblparam;
+    CPXXchgctype;
+extern std::function<int(CPXCENVptr, CPXCLPptr, double*)> CPXXgetobjval;
+extern std::function<int(CPXCENVptr, CPXCLPptr, double*)> CPXXgetbestobjval;
+extern std::function<int(CPXENVptr, int, double)> CPXXsetdblparam;
 extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*,
                          double const*)>
-    CPXchgrngval;
-extern std::function<int(CPXCENVptr, CPXLPptr, CPXNNZ, CPXNNZ const*,
-                         CPXNNZ const*, double const*)>
-    CPXchgcoeflist;
-extern std::function<int(CPXCENVptr, CPXLPptr, double)> CPXEsetobjoffset;
+    CPXXchgrngval;
+extern std::function<int(CPXCENVptr, CPXLPptr, CPXNNZ, CPXDIM const*,
+                         CPXDIM const*, double const*)>
+    CPXXchgcoeflist;
+extern std::function<int(CPXCENVptr, CPXLPptr, double)> CPXXEsetobjoffset;
 extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*,
                          char const*)>
-    CPXchgsense;
+    CPXXchgsense;
 extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*,
                          double const*)>
-    CPXchgrhs;
+    CPXXchgrhs;
 extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM, double)>
-    CPXchgcoef;
+    CPXXchgcoef;
 extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*,
                          double const*)>
-    CPXchgobj;
-extern std::function<int(CPXCENVptr, CPXCLPptr, int*, int*)> CPXgetbase;
+    CPXXchgobj;
+extern std::function<int(CPXCENVptr, CPXCLPptr, int*, int*)> CPXXgetbase;
 extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, double const*,
                          double const*, double const*, char const*,
                          char const* const*)>
-    CPXnewcols;
+    CPXXnewcols;
 extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXNNZ, double const*,
                          CPXNNZ const*, CPXDIM const*, double const*,
                          double const*, double const*, char const* const*)>
-    CPXaddcols;
+    CPXXaddcols;
 extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM, CPXNNZ,
                          double const*, char const*, CPXNNZ const*,
                          CPXDIM const*, double const*, char const* const*,
                          char const* const*)>
-    CPXaddrows;
-extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM)> CPXdelrows;
-extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM)> CPXdelcols;
-extern std::function<int(CPXENVptr, char const*)> CPXreadcopyparam;
-extern std::function<CPXCNT(CPXCENVptr, CPXLPptr)> CPXgetnodecnt;
-extern std::function<int(CPXCENVptr, CPXLPptr)> CPXmipopt;
-extern std::function<int(CPXCENVptr, CPXLPptr)> CPXlpopt;
-extern std::function<CPXCCHARptr(CPXCENVptr, int, char*)> CPXgeterrorstring;
-extern std::function<int(CPXCENVptr, char const*, int*)> CPXgetparamnum;
-extern std::function<int(CPXENVptr, int, CPXINT)> CPXsetintparam;
-extern std::function<int(CPXCENVptr, int, int*)> CPXgetparamtype;
-extern std::function<int(CPXENVptr, int, double)> CPXsetdblparam;
-extern std::function<int(CPXENVptr, int, char const*)> CPXsetstrparam;
-extern std::function<int(CPXENVptr, int, CPXLONG)> CPXsetlongparam;
+    CPXXaddrows;
+extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM)> CPXXdelrows;
+extern std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM)> CPXXdelcols;
+extern std::function<int(CPXENVptr, char const*)> CPXXreadcopyparam;
+extern std::function<CPXCNT(CPXCENVptr, CPXLPptr)> CPXXgetnodecnt;
+extern std::function<int(CPXCENVptr, CPXLPptr)> CPXXmipopt;
+extern std::function<int(CPXCENVptr, CPXLPptr)> CPXXlpopt;
+extern std::function<CPXCCHARptr(CPXCENVptr, int, char*)> CPXXgeterrorstring;
+extern std::function<int(CPXCENVptr, char const*, int*)> CPXXgetparamnum;
+extern std::function<int(CPXENVptr, int, CPXINT)> CPXXsetintparam;
+extern std::function<int(CPXCENVptr, int, int*)> CPXXgetparamtype;
+extern std::function<int(CPXENVptr, int, double)> CPXXsetdblparam;
+extern std::function<int(CPXENVptr, int, char const*)> CPXXsetstrparam;
+extern std::function<int(CPXENVptr, int, CPXLONG)> CPXXsetlongparam;
+extern std::function<int(CPXCENVptr, CPXLPptr, int, CPXNNZ, CPXNNZ const*,
+                         CPXDIM const*, double const*, int const*,
+                         char const* const*)>
+    CPXXaddmipstarts;
+extern std::function<int(CPXCENVptr, char const*, char const*)>
+    CPXXsetlogfilename;
 
 }  // namespace operations_research
 #endif

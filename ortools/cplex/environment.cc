@@ -17,125 +17,132 @@
 
 namespace operations_research {
 
-std::function<int(CPXCENVptr, CPXCLPptr, int*, int*, int*, int*)> CPXsolninfo =
+std::function<int(CPXCENVptr, CPXCLPptr, int*, int*, int*, int*)> CPXXsolninfo =
     nullptr;
-std::function<CPXCNT(CPXCENVptr, CPXCLPptr)> CPXgetmipitcnt = nullptr;
-std::function<CPXCNT(CPXCENVptr, CPXCLPptr)> CPXgetitcnt = nullptr;
-std::function<CPXENVptr(int*)> CPXopenCPLEX = nullptr;
+std::function<CPXCNT(CPXCENVptr, CPXCLPptr)> CPXXgetmipitcnt = nullptr;
+std::function<CPXCNT(CPXCENVptr, CPXCLPptr)> CPXXgetitcnt = nullptr;
+std::function<CPXENVptr(int*)> CPXXopenCPLEX = nullptr;
 std::function<int(CPXCENVptr, CPXLPptr, int const*, int const*, double const*,
                   double const*, double const*, double const*)>
-    CPXcopystart = nullptr;
-std::function<int(CPXCENVptr, CPXCLPptr, double*, int)> CPXgetdblquality =
+    CPXXcopystart = nullptr;
+std::function<int(CPXCENVptr, CPXCLPptr, double*, int)> CPXXgetdblquality =
     nullptr;
-std::function<int(CPXCENVptr, CPXLPptr*)> CPXfreeprob = nullptr;
-std::function<int(CPXENVptr*)> CPXcloseCPLEX = nullptr;
-std::function<int(CPXCENVptr, int*)> CPXversionnumber = nullptr;
-std::function<CPXLPptr(CPXCENVptr, int*, char const*)> CPXcreateprob = nullptr;
-std::function<int(CPXCENVptr, CPXLPptr, int)> CPXchgobjsen = nullptr;
-std::function<int(CPXCENVptr, CPXLPptr, int)> CPXchgprobtype = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr*)> CPXXfreeprob = nullptr;
+std::function<int(CPXENVptr*)> CPXXcloseCPLEX = nullptr;
+std::function<int(CPXCENVptr, int*)> CPXXversionnumber = nullptr;
+std::function<CPXLPptr(CPXCENVptr, int*, char const*)> CPXXcreateprob = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr, int)> CPXXchgobjsen = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr, int)> CPXXchgprobtype = nullptr;
 std::function<int(CPXCENVptr env, CPXLPptr lp, CPXDIM cnt,
                   CPXDIM const* indices, char const* lu, double const* bd)>
-    CPXchgbds = nullptr;
-std::function<int(CPXCENVptr, CPXCLPptr, double*, CPXDIM, CPXDIM)> CPXgetdj =
+    CPXXchgbds = nullptr;
+std::function<int(CPXCENVptr, CPXCLPptr, double*, CPXDIM, CPXDIM)> CPXXgetdj =
     nullptr;
-std::function<int(CPXCENVptr, CPXCLPptr, double*, CPXDIM, CPXDIM)> CPXgetpi =
+std::function<int(CPXCENVptr, CPXCLPptr, double*, CPXDIM, CPXDIM)> CPXXgetpi =
     nullptr;
-std::function<int(CPXCENVptr, CPXCLPptr, double*, CPXDIM, CPXDIM)> CPXgetx =
+std::function<int(CPXCENVptr, CPXCLPptr, double*, CPXDIM, CPXDIM)> CPXXgetx =
     nullptr;
-std::function<CPXDIM(CPXCENVptr, CPXCLPptr)> CPXgetnumrows = nullptr;
-std::function<CPXDIM(CPXCENVptr, CPXCLPptr)> CPXgetnumcols = nullptr;
-std::function<int(CPXCENVptr, CPXCLPptr)> CPXgetstat = nullptr;
+std::function<CPXDIM(CPXCENVptr, CPXCLPptr)> CPXXgetnumrows = nullptr;
+std::function<CPXDIM(CPXCENVptr, CPXCLPptr)> CPXXgetnumcols = nullptr;
+std::function<int(CPXCENVptr, CPXCLPptr)> CPXXgetstat = nullptr;
 std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*, char const*)>
-    CPXchgctype = nullptr;
-std::function<int(CPXCENVptr, CPXCLPptr, double*)> CPXgetobjval = nullptr;
-std::function<int(CPXCENVptr, CPXCLPptr, double*)> CPXgetbestobjval = nullptr;
+    CPXXchgctype = nullptr;
+std::function<int(CPXCENVptr, CPXCLPptr, double*)> CPXXgetobjval = nullptr;
+std::function<int(CPXCENVptr, CPXCLPptr, double*)> CPXXgetbestobjval = nullptr;
 std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*, double const*)>
-    CPXchgrngval = nullptr;
-std::function<int(CPXCENVptr, CPXLPptr, CPXNNZ, CPXNNZ const*, CPXNNZ const*,
+    CPXXchgrngval = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr, CPXNNZ, CPXDIM const*, CPXDIM const*,
                   double const*)>
-    CPXchgcoeflist = nullptr;
-std::function<int(CPXCENVptr, CPXLPptr, double)> CPXEsetobjoffset = nullptr;
+    CPXXchgcoeflist = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr, double)> CPXXEsetobjoffset = nullptr;
 std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*, char const*)>
-    CPXchgsense = nullptr;
+    CPXXchgsense = nullptr;
 std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*, double const*)>
-    CPXchgrhs = nullptr;
-std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM, double)> CPXchgcoef =
+    CPXXchgrhs = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM, double)> CPXXchgcoef =
     nullptr;
 std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM const*, double const*)>
-    CPXchgobj = nullptr;
-std::function<int(CPXCENVptr, CPXCLPptr, int*, int*)> CPXgetbase = nullptr;
+    CPXXchgobj = nullptr;
+std::function<int(CPXCENVptr, CPXCLPptr, int*, int*)> CPXXgetbase = nullptr;
 std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, double const*, double const*,
                   double const*, char const*, char const* const*)>
-    CPXnewcols = nullptr;
+    CPXXnewcols = nullptr;
 std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXNNZ, double const*,
                   CPXNNZ const*, CPXDIM const*, double const*, double const*,
                   double const*, char const* const*)>
-    CPXaddcols = nullptr;
+    CPXXaddcols = nullptr;
 std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM, CPXNNZ, double const*,
                   char const*, CPXNNZ const*, CPXDIM const*, double const*,
                   char const* const*, char const* const*)>
-    CPXaddrows = nullptr;
-std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM)> CPXdelrows = nullptr;
-std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM)> CPXdelcols = nullptr;
-std::function<int(CPXENVptr, char const*)> CPXreadcopyparam = nullptr;
-std::function<CPXCNT(CPXCENVptr, CPXLPptr)> CPXgetnodecnt = nullptr;
-std::function<int(CPXCENVptr, CPXLPptr)> CPXmipopt = nullptr;
-std::function<int(CPXCENVptr, CPXLPptr)> CPXlpopt = nullptr;
-std::function<CPXCCHARptr(CPXCENVptr, int, char*)> CPXgeterrorstring = nullptr;
-std::function<int(CPXCENVptr, char const*, int*)> CPXgetparamnum = nullptr;
-std::function<int(CPXENVptr, int, CPXINT)> CPXsetintparam = nullptr;
-std::function<int(CPXCENVptr, int, int*)> CPXgetparamtype = nullptr;
-std::function<int(CPXENVptr, int, double)> CPXsetdblparam = nullptr;
-std::function<int(CPXENVptr, int, char const*)> CPXsetstrparam = nullptr;
-std::function<int(CPXENVptr, int, CPXLONG)> CPXsetlongparam = nullptr;
+    CPXXaddrows = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM)> CPXXdelrows = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr, CPXDIM, CPXDIM)> CPXXdelcols = nullptr;
+std::function<int(CPXENVptr, char const*)> CPXXreadcopyparam = nullptr;
+std::function<CPXCNT(CPXCENVptr, CPXLPptr)> CPXXgetnodecnt = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr)> CPXXmipopt = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr)> CPXXlpopt = nullptr;
+std::function<CPXCCHARptr(CPXCENVptr, int, char*)> CPXXgeterrorstring = nullptr;
+std::function<int(CPXCENVptr, char const*, int*)> CPXXgetparamnum = nullptr;
+std::function<int(CPXENVptr, int, CPXINT)> CPXXsetintparam = nullptr;
+std::function<int(CPXCENVptr, int, int*)> CPXXgetparamtype = nullptr;
+std::function<int(CPXENVptr, int, double)> CPXXsetdblparam = nullptr;
+std::function<int(CPXENVptr, int, char const*)> CPXXsetstrparam = nullptr;
+std::function<int(CPXENVptr, int, CPXLONG)> CPXXsetlongparam = nullptr;
+std::function<int(CPXCENVptr, CPXLPptr, int, CPXNNZ, CPXNNZ const*,
+                  CPXDIM const*, double const*, int const*, char const* const*)>
+    CPXXaddmipstarts = nullptr;
+std::function<int(CPXCENVptr, char const*, char const*)> CPXXsetlogfilename =
+    nullptr;
 
 void LoadCplexFunctions(DynamicLibrary* cplex_dynamic_library) {
-  cplex_dynamic_library->GetFunction(&CPXgeterrorstring, "CPXgeterrorstring");
-  cplex_dynamic_library->GetFunction(&CPXgetitcnt, "CPXgetitcnt");
-  cplex_dynamic_library->GetFunction(&CPXEsetobjoffset, "CPXEsetobjoffset");
-  cplex_dynamic_library->GetFunction(&CPXsolninfo, "CPXsolninfo");
-  cplex_dynamic_library->GetFunction(&CPXgetmipitcnt, "CPXgetmipitcnt");
-  cplex_dynamic_library->GetFunction(&CPXopenCPLEX, "CPXopenCPLEX");
-  cplex_dynamic_library->GetFunction(&CPXcopystart, "CPXcopystart");
-  cplex_dynamic_library->GetFunction(&CPXgetdblquality, "CPXgetdblquality");
-  cplex_dynamic_library->GetFunction(&CPXfreeprob, "CPXfreeprob");
-  cplex_dynamic_library->GetFunction(&CPXcloseCPLEX, "CPXcloseCPLEX");
-  cplex_dynamic_library->GetFunction(&CPXversionnumber, "CPXversionnumber");
-  cplex_dynamic_library->GetFunction(&CPXcreateprob, "CPXcreateprob");
-  cplex_dynamic_library->GetFunction(&CPXchgobjsen, "CPXchgobjsen");
-  cplex_dynamic_library->GetFunction(&CPXchgprobtype, "CPXchgprobtype");
-  cplex_dynamic_library->GetFunction(&CPXchgbds, "CPXchgbds");
-  cplex_dynamic_library->GetFunction(&CPXgetdj, "CPXgetdj");
-  cplex_dynamic_library->GetFunction(&CPXgetpi, "CPXgetpi");
-  cplex_dynamic_library->GetFunction(&CPXgetx, "CPXgetx");
-  cplex_dynamic_library->GetFunction(&CPXgetnumrows, "CPXgetnumrows");
-  cplex_dynamic_library->GetFunction(&CPXgetnumcols, "CPXgetnumcols");
-  cplex_dynamic_library->GetFunction(&CPXgetstat, "CPXgetstat");
-  cplex_dynamic_library->GetFunction(&CPXchgctype, "CPXchgctype");
-  cplex_dynamic_library->GetFunction(&CPXgetobjval, "CPXgetobjval");
-  cplex_dynamic_library->GetFunction(&CPXgetbestobjval, "CPXgetbestobjval");
-  cplex_dynamic_library->GetFunction(&CPXchgrngval, "CPXchgrngval");
-  cplex_dynamic_library->GetFunction(&CPXchgcoeflist, "CPXchgcoeflist");
-  cplex_dynamic_library->GetFunction(&CPXchgsense, "CPXchgsense");
-  cplex_dynamic_library->GetFunction(&CPXchgrhs, "CPXchgrhs");
-  cplex_dynamic_library->GetFunction(&CPXchgcoef, "CPXchgcoef");
-  cplex_dynamic_library->GetFunction(&CPXchgobj, "CPXchgobj");
-  cplex_dynamic_library->GetFunction(&CPXgetbase, "CPXgetbase");
-  cplex_dynamic_library->GetFunction(&CPXnewcols, "CPXnewcols");
-  cplex_dynamic_library->GetFunction(&CPXaddcols, "CPXaddcols");
-  cplex_dynamic_library->GetFunction(&CPXaddrows, "CPXaddrows");
-  cplex_dynamic_library->GetFunction(&CPXdelrows, "CPXdelrows");
-  cplex_dynamic_library->GetFunction(&CPXdelcols, "CPXdelcols");
-  cplex_dynamic_library->GetFunction(&CPXgetnodecnt, "CPXgetnodecnt");
-  cplex_dynamic_library->GetFunction(&CPXreadcopyparam, "CPXreadcopyparam");
-  cplex_dynamic_library->GetFunction(&CPXmipopt, "CPXmipopt");
-  cplex_dynamic_library->GetFunction(&CPXlpopt, "CPXlpopt");
-  cplex_dynamic_library->GetFunction(&CPXgetparamnum, "CPXgetparamnum");
-  cplex_dynamic_library->GetFunction(&CPXsetintparam, "CPXsetintparam");
-  cplex_dynamic_library->GetFunction(&CPXgetparamtype, "CPXgetparamtype");
-  cplex_dynamic_library->GetFunction(&CPXsetdblparam, "CPXsetdblparam");
-  cplex_dynamic_library->GetFunction(&CPXsetstrparam, "CPXsetstrparam");
-  cplex_dynamic_library->GetFunction(&CPXsetlongparam, "CPXsetlongparam");
+  cplex_dynamic_library->GetFunction(&CPXXsetlogfilename, "CPXXsetlogfilename");
+  cplex_dynamic_library->GetFunction(&CPXXaddmipstarts, "CPXXaddmipstarts");
+  cplex_dynamic_library->GetFunction(&CPXXgeterrorstring, "CPXXgeterrorstring");
+  cplex_dynamic_library->GetFunction(&CPXXgetitcnt, "CPXXgetitcnt");
+  cplex_dynamic_library->GetFunction(&CPXXEsetobjoffset, "CPXXEsetobjoffset");
+  cplex_dynamic_library->GetFunction(&CPXXsolninfo, "CPXXsolninfo");
+  cplex_dynamic_library->GetFunction(&CPXXgetmipitcnt, "CPXXgetmipitcnt");
+  cplex_dynamic_library->GetFunction(&CPXXopenCPLEX, "CPXXopenCPLEX");
+  cplex_dynamic_library->GetFunction(&CPXXcopystart, "CPXXcopystart");
+  cplex_dynamic_library->GetFunction(&CPXXgetdblquality, "CPXXgetdblquality");
+  cplex_dynamic_library->GetFunction(&CPXXfreeprob, "CPXXfreeprob");
+  cplex_dynamic_library->GetFunction(&CPXXcloseCPLEX, "CPXXcloseCPLEX");
+  cplex_dynamic_library->GetFunction(&CPXXversionnumber, "CPXXversionnumber");
+  cplex_dynamic_library->GetFunction(&CPXXcreateprob, "CPXXcreateprob");
+  cplex_dynamic_library->GetFunction(&CPXXchgobjsen, "CPXXchgobjsen");
+  cplex_dynamic_library->GetFunction(&CPXXchgprobtype, "CPXXchgprobtype");
+  cplex_dynamic_library->GetFunction(&CPXXchgbds, "CPXXchgbds");
+  cplex_dynamic_library->GetFunction(&CPXXgetdj, "CPXXgetdj");
+  cplex_dynamic_library->GetFunction(&CPXXgetpi, "CPXXgetpi");
+  cplex_dynamic_library->GetFunction(&CPXXgetx, "CPXXgetx");
+  cplex_dynamic_library->GetFunction(&CPXXgetnumrows, "CPXXgetnumrows");
+  cplex_dynamic_library->GetFunction(&CPXXgetnumcols, "CPXXgetnumcols");
+  cplex_dynamic_library->GetFunction(&CPXXgetstat, "CPXXgetstat");
+  cplex_dynamic_library->GetFunction(&CPXXchgctype, "CPXXchgctype");
+  cplex_dynamic_library->GetFunction(&CPXXgetobjval, "CPXXgetobjval");
+  cplex_dynamic_library->GetFunction(&CPXXgetbestobjval, "CPXXgetbestobjval");
+  cplex_dynamic_library->GetFunction(&CPXXchgrngval, "CPXXchgrngval");
+  cplex_dynamic_library->GetFunction(&CPXXchgcoeflist, "CPXXchgcoeflist");
+  cplex_dynamic_library->GetFunction(&CPXXchgsense, "CPXXchgsense");
+  cplex_dynamic_library->GetFunction(&CPXXchgrhs, "CPXXchgrhs");
+  cplex_dynamic_library->GetFunction(&CPXXchgcoef, "CPXXchgcoef");
+  cplex_dynamic_library->GetFunction(&CPXXchgobj, "CPXXchgobj");
+  cplex_dynamic_library->GetFunction(&CPXXgetbase, "CPXXgetbase");
+  cplex_dynamic_library->GetFunction(&CPXXnewcols, "CPXXnewcols");
+  cplex_dynamic_library->GetFunction(&CPXXaddcols, "CPXXaddcols");
+  cplex_dynamic_library->GetFunction(&CPXXaddrows, "CPXXaddrows");
+  cplex_dynamic_library->GetFunction(&CPXXdelrows, "CPXXdelrows");
+  cplex_dynamic_library->GetFunction(&CPXXdelcols, "CPXXdelcols");
+  cplex_dynamic_library->GetFunction(&CPXXgetnodecnt, "CPXXgetnodecnt");
+  cplex_dynamic_library->GetFunction(&CPXXreadcopyparam, "CPXXreadcopyparam");
+  cplex_dynamic_library->GetFunction(&CPXXmipopt, "CPXXmipopt");
+  cplex_dynamic_library->GetFunction(&CPXXlpopt, "CPXXlpopt");
+  cplex_dynamic_library->GetFunction(&CPXXgetparamnum, "CPXXgetparamnum");
+  cplex_dynamic_library->GetFunction(&CPXXsetintparam, "CPXXsetintparam");
+  cplex_dynamic_library->GetFunction(&CPXXgetparamtype, "CPXXgetparamtype");
+  cplex_dynamic_library->GetFunction(&CPXXsetdblparam, "CPXXsetdblparam");
+  cplex_dynamic_library->GetFunction(&CPXXsetstrparam, "CPXXsetstrparam");
+  cplex_dynamic_library->GetFunction(&CPXXsetlongparam, "CPXXsetlongparam");
 }
 
 // TODO: add fully support to linux and macOS
@@ -181,7 +188,9 @@ std::vector<std::string> CplexDynamicLibraryPotentialPaths() {
                                            version, "\\cplex\\bin\\cplex",
                                            version, ".dll"));
 #elif defined(__APPLE__)  // OS X (intel processors)
-    potential_paths.push_back(absl::StrCat("/Applications/CPLEX_Studio", version, "cplex/bin/x86-64_osx/libcplex", version, ".dylib"));
+    potential_paths.push_back(
+        absl::StrCat("/Applications/CPLEX_Studio", version,
+                     "cplex/bin/x86-64_osx/libcplex", version, ".dylib"));
 #else
     LOG(ERROR) << "OS Not recognized by cplx/environment.cc."
                << " You won't be able to use Cplex.";
@@ -229,11 +238,11 @@ absl::StatusOr<CPXENVptr> GetCplexEnv() {
   RETURN_IF_ERROR(LoadCplexDynamicLibrary({}));
 
   int status = 0;
-  CPXENVptr env = CPXopenCPLEX(&status);
+  CPXENVptr env = CPXXopenCPLEX(&status);
 
   if (status) {
     char errmsg[CPXMESSAGEBUFSIZE];
-    CPXgeterrorstring(env, status, errmsg);
+    CPXXgeterrorstring(env, status, errmsg);
     return absl::FailedPreconditionError(
         absl::StrCat("Found the Cplex shared library, but could not create "
                      "Cplex environment: is Cplex licensed on this machine?",
@@ -248,7 +257,7 @@ bool CplexIsCorrectlyInstalled() {
     return false;
   }
 
-  CPXcloseCPLEX(&status.value());
+  CPXXcloseCPLEX(&status.value());
 
   return true;
 }

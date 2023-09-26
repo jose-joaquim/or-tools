@@ -342,6 +342,16 @@ if(BUILD_Cbc)
   message(CHECK_PASS "fetched")
 endif()
 
+if(BUILD_JSON)
+  message(CHECK_START "Fetching json")
+  list(APPEND CMAKE_MESSAGE_INDENT "  ")
+
+  FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
+  FetchContent_MakeAvailable(json)
+  list(POP_BACK CMAKE_MESSAGE_INDENT)
+  message(CHECK_PASS "fetched")
+endif()
+
 if(MSVC)
   set(CMAKE_CXX_STANDARD 20)
 else()
